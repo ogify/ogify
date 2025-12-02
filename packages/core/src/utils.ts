@@ -1,4 +1,4 @@
-import type { ThemeConfig, FontConfig } from './types';
+import type { FontConfig } from './types';
 
 /**
  * Deep merge objects, with later sources taking priority
@@ -49,25 +49,6 @@ export function mergeParams<T extends Record<string, any>>(
 }
 
 /**
- * Merge theme configurations
- */
-export function mergeThemes(
-  templateTheme?: ThemeConfig,
-  registrationTheme?: ThemeConfig | string,
-  globalTheme?: ThemeConfig
-): ThemeConfig {
-  const themes = [templateTheme, globalTheme].filter(Boolean) as ThemeConfig[];
-
-  if (typeof registrationTheme === 'string') {
-    themes.push({ name: registrationTheme });
-  } else if (registrationTheme) {
-    themes.push(registrationTheme);
-  }
-
-  return deepMerge({}, ...themes);
-}
-
-/**
  * Merge font configurations
  */
 export function mergeFonts(...fontArrays: (FontConfig[] | undefined)[]): FontConfig[] {
@@ -114,18 +95,28 @@ function hashString(str: string): string {
 }
 
 /**
- * Convert Zod schema to JSON schema
+ * Convert schema to JSON schema representation
  */
-export function zodToJsonSchema(schema: any): any {
+export function schemaToJsonSchema(schema: any): any {
   try {
-    return schema._def;
+    // For simple schemas, return a basic representation
+    if (schema && typeof schema.getFields === 'function') {
+      const fields = schema.getFields();
+      return {
+        type: 'object',
+        properties: {},
+        required: fields?.required || [],
+        optional: fields?.optional || [],
+      };
+    }
+    return {};
   } catch {
     return {};
   }
 }
 
 /**
- * Extract required and optional parameters from Zod schema
+ * Extract required and optional parameters from schema
  */
 export function extractSchemaFields(schema: any): {
   required: string[];
@@ -135,18 +126,12 @@ export function extractSchemaFields(schema: any): {
   const optional: string[] = [];
 
   try {
-    const shape = schema._def?.shape;
-    if (shape) {
-      for (const [key, fieldSchema] of Object.entries(shape) as [string, any][]) {
-        const isOptional =
-          fieldSchema._def?.typeName === 'ZodOptional' ||
-          fieldSchema._def?.typeName === 'ZodDefault';
-        if (isOptional) {
-          optional.push(key);
-        } else {
-          required.push(key);
-        }
-      }
+    if (schema && typeof schema.getFields === 'function') {
+      const fields = schema.getFields();
+      return {
+        required: fields?.required || [],
+        optional: fields?.optional || [],
+      };
     }
   } catch {
     // Fallback if schema parsing fails

@@ -7,7 +7,7 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   clean: true,
-  external: ['satori', '@resvg/resvg-js'],
+  external: ['@ogify/core'],
   treeshake: true,
   target: 'node18.0',
 });

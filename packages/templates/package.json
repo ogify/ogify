@@ -1,7 +1,7 @@
 {
-  "name": "@ogify/core",
-  "version": "0.1.1",
-  "description": "Core types and utilities for OGify Open Graph image generator",
+  "name": "@ogify/templates",
+  "version": "0.1.0",
+  "description": "Free templates for OGify Open Graph image generator",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -24,21 +24,18 @@
   "keywords": [
     "open-graph",
     "og-image",
+    "templates",
     "typescript",
     "satori"
   ],
   "author": "OGify Team",
   "license": "MIT",
   "dependencies": {
-    "satori": "^0.10.14",
-    "satori-html": "^0.3.2"
+    "@ogify/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
-  },
-  "optionalDependencies": {
-    "@resvg/resvg-js": "^2.6.2"
   }
 }
