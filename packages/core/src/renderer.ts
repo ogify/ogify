@@ -1,10 +1,10 @@
-import satori from 'satori';
+import satori, { SatoriOptions } from 'satori';
 import { html } from 'satori-html';
 import type { OGTemplate, TemplateParams } from './types';
 
 const DEFAULT_WIDTH = 1200;
 const DEFAULT_HEIGHT = 630;
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /**
@@ -25,16 +25,20 @@ export async function renderOgImage(template: OGTemplate, params: TemplateParams
 
   const fontName = 'Inter';
   const fontPath = join(process.cwd(), `${fontName}-Regular.ttf`);
-  const satoriFonts = [
+  const satoriFonts: SatoriOptions['fonts'] = [
+    {
+      name: fontName,
+      data: (await readFile(join(process.cwd(), `Herculanum.ttf`))).buffer,
+      weight: 300,
+      style: 'normal',
+    },
     {
       name: fontName,
       data: (await readFile(fontPath)).buffer,
-      // weight: 400,
-      // style: 'normal',
+      weight: 400,
+      style: 'normal',
     },
   ];
-
-  console.log('satoriFonts', satoriFonts);
 
   // If no fonts provided, Satori will use its default fonts
 

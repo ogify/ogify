@@ -22,12 +22,12 @@ export const minimalTemplate = defineTemplate({
   html: ({ params }: TemplateProps) => {
     const { title, description } = params;
     return `
-      <div style="font-family: Arial" class="flex flex-col items-center justify-center w-full h-full bg-white text-black font-sans p-4 box-border">
+      <div style="font-family: Inter" class="flex flex-col items-center justify-center w-full h-full bg-white text-black font-sans p-4">
         <h1 class="text-[100px] font-bold text-center mb-5">
           ${title}
         </h1>
         
-        <p class="text-[50px] text-center opacity-80 leading-relaxed">
+        <p class="text-[50px] font-light text-center opacity-80 leading-relaxed">
           ${description}
         </p>
       </div>
