@@ -30,6 +30,7 @@
   "author": "OGify Team",
   "license": "MIT",
   "dependencies": {
+    "next-font": "^1.2.0",
     "satori": "^0.10.14",
     "satori-html": "^0.3.2"
   },

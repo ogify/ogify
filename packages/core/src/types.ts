@@ -2,16 +2,28 @@
  * Configuration for custom fonts used in OG image templates.
  * Fonts must be provided as binary data (ArrayBuffer or Buffer).
  */
-export interface FontConfig {
+export type FontConfig = {
   /** The font family name (e.g., 'Inter', 'Roboto') */
   name: string;
-  
+
   /** Binary font data loaded from a .ttf, .otf, or .woff file */
   data: ArrayBuffer | Buffer;
-  
+
   /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
   weight?: number;
-  
+
+  /** Font style variant */
+  style?: 'normal' | 'italic';
+} | {
+  /** The font family name (e.g., 'Inter', 'Roboto') */
+  name: string;
+
+  /** URL to the font file (e.g., 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap') */
+  url: string;
+
+  /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
+  weight?: number;
+
   /** Font style variant */
   style?: 'normal' | 'italic';
 }
@@ -23,10 +35,10 @@ export interface FontConfig {
 export interface TemplateProps {
   /** User-provided parameters that populate the template (e.g., title, description, author) */
   params: TemplateParams;
-  
+
   /** Optional custom width in pixels (default: 1200) */
   width?: number;
-  
+
   /** Optional custom height in pixels (default: 630) */
   height?: number;
 }
@@ -52,22 +64,20 @@ export type TemplateParams = Record<string, string | number | boolean>;
 export type TemplateSchema = Record<
   string,
   | {
-      type: 'string';
-      /** Whether this parameter must be provided */
-      required?: boolean;
-      /** Default value if not provided */
-      defaultValue?: string;
-    }
+    type: 'string';
+    required?: boolean;
+    defaultValue?: string;
+  }
   | {
-      type: 'number';
-      required?: boolean;
-      defaultValue?: number;
-    }
+    type: 'number';
+    required?: boolean;
+    defaultValue?: number;
+  }
   | {
-      type: 'boolean';
-      required?: boolean;
-      defaultValue?: boolean;
-    }
+    type: 'boolean';
+    required?: boolean;
+    defaultValue?: boolean;
+  }
 >;
 
 /**
@@ -77,21 +87,21 @@ export type TemplateSchema = Record<
 export interface OGTemplate {
   /** Unique identifier for this template (e.g., 'blog-post', 'product-card') */
   id: string;
-  
+
   /** Human-readable name for display purposes */
   name: string;
-  
+
   /** Brief description of what this template is used for */
   description: string;
-  
+
   /** Function that generates HTML markup from template parameters */
   html: (props: TemplateProps) => string;
-  
+
   /** Schema defining expected parameters and their types */
   schema: TemplateSchema;
-  
+
   /** Optional custom fonts to use in this template */
-  fonts?: FontConfig[];
+  fonts: FontConfig[];
 }
 
 /**
@@ -101,16 +111,16 @@ export interface OGTemplate {
 export interface TemplateHandlerConfig {
   /** Array of template definitions to register */
   templates: OGTemplate[];
-  
+
   /** Default parameter values applied to all templates */
   defaultParams?: TemplateParams;
-  
+
   /** Global fonts available to all templates */
   fonts?: FontConfig[];
-  
+
   /** Hook called before rendering (useful for logging, analytics, validation) */
   beforeRender?: (templateId: string, params: TemplateParams) => void | Promise<void>;
-  
+
   /** Hook called after rendering (useful for caching, cleanup, notifications) */
   afterRender?: (templateId: string, params: TemplateParams) => void | Promise<void>;
 }
