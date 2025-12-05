@@ -1,0 +1,19 @@
+{
+  "name": "@ogify/examples",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx index.ts"
+  },
+  "dependencies": {
+    "@ogify/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^18",
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.3"
+  }
+}

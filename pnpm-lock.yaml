@@ -38,9 +38,6 @@ importers:
       '@ogify/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ogify/templates':
-        specifier: workspace:*
-        version: link:../../packages/templates
     devDependencies:
       '@types/node':
         specifier: ^18
@@ -54,32 +51,15 @@ importers:
 
   packages/core:
     dependencies:
+      '@resvg/resvg-js':
+        specifier: ^2.6.2
+        version: 2.6.2
       satori:
         specifier: ^0.10.14
         version: 0.10.14
       satori-html:
         specifier: ^0.3.2
         version: 0.3.2
-    devDependencies:
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.19.25
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-    optionalDependencies:
-      '@resvg/resvg-js':
-        specifier: ^2.6.2
-        version: 2.6.2
-
-  packages/templates:
-    dependencies:
-      '@ogify/core':
-        specifier: workspace:*
-        version: link:../core
     devDependencies:
       '@types/node':
         specifier: ^20.10.0
@@ -1901,7 +1881,6 @@ snapshots:
       '@resvg/resvg-js-win32-arm64-msvc': 2.6.2
       '@resvg/resvg-js-win32-ia32-msvc': 2.6.2
       '@resvg/resvg-js-win32-x64-msvc': 2.6.2
-    optional: true
 
   '@rollup/rollup-android-arm-eabi@4.53.3':
     optional: true

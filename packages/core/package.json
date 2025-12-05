@@ -30,16 +30,13 @@
   "author": "OGify Team",
   "license": "MIT",
   "dependencies": {
-    "next-font": "^1.2.0",
     "satori": "^0.10.14",
-    "satori-html": "^0.3.2"
+    "satori-html": "^0.3.2",
+    "@resvg/resvg-js": "^2.6.2"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
-  },
-  "optionalDependencies": {
-    "@resvg/resvg-js": "^2.6.2"
   }
 }
