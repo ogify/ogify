@@ -2,31 +2,43 @@
  * Configuration for custom fonts used in OG image templates.
  * Fonts must be provided as binary data (ArrayBuffer or Buffer).
  */
-export type FontConfig = {
-  /** The font family name (e.g., 'Inter', 'Roboto') */
-  name: string;
+export type FontConfig =
+  | {
+      /** The font family name (e.g., 'Inter', 'Roboto') */
+      name: string;
 
-  /** Binary font data loaded from a .ttf, .otf, or .woff file */
-  data: ArrayBuffer | Buffer;
+      /** Binary font data loaded from a .ttf, .otf, or .woff file */
+      data: ArrayBuffer | Buffer;
 
-  /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
-  weight?: number;
+      /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
+      weight?: number;
 
-  /** Font style variant */
-  style?: 'normal' | 'italic';
-} | {
-  /** The font family name (e.g., 'Inter', 'Roboto') */
-  name: string;
+      /** Font style variant */
+      style?: 'normal' | 'italic';
+    }
+  | {
+      /** The font family name (e.g., 'Inter', 'Roboto') */
+      name: string;
 
-  /** URL to the font file (e.g., 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap') */
-  url: string;
+      /** URL to the font file (e.g., 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap') */
+      url: string;
 
-  /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
-  weight?: number;
+      /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
+      weight?: number;
 
-  /** Font style variant */
-  style?: 'normal' | 'italic';
-}
+      /** Font style variant */
+      style?: 'normal' | 'italic';
+    }
+  | {
+      /** The font family name (e.g., 'Inter', 'Roboto') */
+      name: string;
+      /** URL to the font file (e.g., 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap') */
+      urls: string[];
+      /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
+      weight?: number;
+      /** Font style variant */
+      style?: 'normal' | 'italic';
+    };
 
 /**
  * Props passed to template HTML rendering functions.
@@ -36,6 +48,8 @@ export interface TemplateProps {
   /** User-provided parameters that populate the template (e.g., title, description, author) */
   params: TemplateParams;
 
+  fonts: TemplateFonts;
+
   /** Optional custom width in pixels (default: 1200) */
   width?: number;
 
@@ -43,6 +57,18 @@ export interface TemplateProps {
   height?: number;
 }
 
+export interface TemplateFonts
+  extends Record<
+    string,
+    {
+      className: string;
+      style: {
+        fontFamily: string;
+        fontWeight?: number;
+        fontStyle?: string;
+      };
+    }
+  > {}
 /**
  * Key-value pairs representing dynamic template parameters.
  * Values can be strings (text content), numbers (counts, dates), or booleans (flags).
@@ -53,7 +79,7 @@ export type TemplateParams = Record<string, string | number | boolean>;
  * Schema definition for template parameters.
  * Defines the expected type, requirement status, and default value for each parameter.
  * Used for validation and documentation of template inputs.
- * 
+ *
  * @example
  * const schema: TemplateSchema = {
  *   title: { type: 'string', required: true },
@@ -64,20 +90,20 @@ export type TemplateParams = Record<string, string | number | boolean>;
 export type TemplateSchema = Record<
   string,
   | {
-    type: 'string';
-    required?: boolean;
-    defaultValue?: string;
-  }
+      type: 'string';
+      required?: boolean;
+      defaultValue?: string;
+    }
   | {
-    type: 'number';
-    required?: boolean;
-    defaultValue?: number;
-  }
+      type: 'number';
+      required?: boolean;
+      defaultValue?: number;
+    }
   | {
-    type: 'boolean';
-    required?: boolean;
-    defaultValue?: boolean;
-  }
+      type: 'boolean';
+      required?: boolean;
+      defaultValue?: boolean;
+    }
 >;
 
 /**

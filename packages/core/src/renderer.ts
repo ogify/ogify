@@ -1,6 +1,6 @@
 import satori, { SatoriOptions } from 'satori';
 import { html } from 'satori-html';
-import type { OGTemplate, TemplateParams } from './types';
+import type { OGTemplate, TemplateFonts, TemplateParams } from './types';
 
 // Standard OG image dimensions recommended by Open Graph protocol
 // 1200x630 provides a 1.91:1 aspect ratio optimal for social media platforms
@@ -24,36 +24,89 @@ const DEFAULT_HEIGHT = 630;
  * const imageBuffer = await renderOgImage(myTemplate, { title: 'Hello World' });
  */
 export async function renderOgImage(template: OGTemplate, params: TemplateParams): Promise<Buffer> {
-  // Step 1: Generate HTML string from template function
-  const element = html(
-    template.html({
-      params,
-    })
-  );
-
-  // Extract fonts from template (defaults to empty array if not provided)
-  const { fonts = [] } = template;
+  // Step 1: Extract fonts from template (defaults to empty array if not provided)
 
   // Configure fonts for Satori renderer
   // Satori requires fonts to be explicitly provided as it runs in a headless environment
   const satoriFonts: SatoriOptions['fonts'] = [];
+  const fonts: TemplateFonts = {};
+  const twFontFamily: Record<string, string | string[]> = {};
 
-  for (const font of fonts) {
-    let fontData: Buffer | ArrayBuffer;
+  for (const font of template.fonts || []) {
     if ('url' in font) {
-      fontData = await (await fetch(font.url)).arrayBuffer();
+      satoriFonts.push({
+        name: font.name,
+        data: await (await fetch(font.url)).arrayBuffer(),
+        // weight: font.weight,
+        style: font.style,
+      });
+
+      fonts[font.name] = {
+        className: font.name,
+        style: {
+          fontFamily: font.name,
+          fontWeight: font.weight,
+          fontStyle: font.style,
+        },
+      };
+
+      twFontFamily[font.name] = font.name;
+    } else if ('urls' in font) {
+      let index = 0;
+      const fontNames = [];
+      for (const url of font.urls) {
+        const fontName = `${font.name}${index === 0 ? '' : `Fallback${index}`}`;
+        fontNames.push(fontName);
+        satoriFonts.push({
+          name: fontName,
+          data: await (await fetch(url)).arrayBuffer(),
+          // weight: font.weight,
+          style: font.style,
+        });
+        index++;
+      }
+      fonts[font.name] = {
+        className: `font-${font.name}`,
+        style: {
+          fontFamily: fontNames.join(', '),
+          fontWeight: font.weight,
+          fontStyle: font.style,
+        },
+      };
+
+      twFontFamily[font.name] = fontNames;
     } else {
-      fontData = font.data;
+      satoriFonts.push({
+        name: font.name,
+        data: font.data,
+        // weight: font.weight,
+        style: font.style,
+      });
+
+      fonts[font.name] = {
+        className: `font-${font.name}`,
+        style: {
+          fontFamily: font.name,
+          fontWeight: font.weight,
+          fontStyle: font.style,
+        },
+      };
+
+      twFontFamily[font.name] = font.name;
     }
-    satoriFonts.push({
-      name: font.name,
-      data: fontData,
-      // weight: font.weight,
-      style: font.style,
-    });
   }
 
-  // Step 2: Render the element tree to SVG using Satori
+  // Step 2: Generate HTML string from template function
+  const element = html(
+    template.html({
+      params,
+      fonts,
+    })
+  );
+
+  console.log(twFontFamily);
+
+  // Step 3: Render the element tree to SVG using Satori
   // Satori converts React-like elements to SVG with proper text layout and styling
   const svg = await satori(element, {
     width: DEFAULT_WIDTH,
@@ -64,9 +117,14 @@ export async function renderOgImage(template: OGTemplate, params: TemplateParams
       console.log('Loading additional asset:', code, segment);
       return satoriFonts.filter((font) => font.name.includes('Fallback'));
     },
+    tailwindConfig: {
+      theme: {
+        fontFamily: twFontFamily,
+      },
+    },
   });
 
-  // Step 3: Convert SVG to PNG using resvg (Rust-based SVG renderer)
+  // Step 4: Convert SVG to PNG using resvg (Rust-based SVG renderer)
   // Dynamic import to reduce initial bundle size
   const { renderAsync } = await import('@resvg/resvg-js');
 
