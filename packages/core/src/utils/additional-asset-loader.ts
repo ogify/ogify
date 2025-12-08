@@ -1,63 +1,138 @@
-// Import Satori types for font configuration
+/**
+ * Additional asset loader for dynamic OG image rendering.
+ *
+ * This module handles loading of assets that are discovered during the rendering process,
+ * such as emojis and fallback fonts for characters not covered by the primary fonts.
+ *
+ * Satori (the OG image renderer) calls this loader when it encounters:
+ * - Emoji characters that need to be rendered as SVG images
+ * - Text characters that require additional font files (e.g., special Unicode ranges)
+ */
+
 import type { SatoriOptions } from 'satori';
 
-// Import custom types for font and emoji configuration
 import type { FontConfig, EmojiProvider } from '../types';
 import { GoogleFontDetector } from './google-font-detector';
 import { loadEmoji } from './emoji-loader';
 import { loadFontFromUrl } from './fetcher';
 
 /**
+ * Options for loading additional assets during OG image rendering.
+ */
+interface LoadAdditionalAssetOptions {
+  /**
+   * Asset type identifier.
+   * - 'emoji': Load an emoji SVG
+   * - Other values: Load fallback fonts for the text segment
+   */
+  code: string;
+
+  /**
+   * The text segment that needs to be rendered.
+   * For emojis: the emoji character itself
+   * For fonts: the text that requires additional font files
+   */
+  segment: string;
+
+  /**
+   * Array of font configurations to check for fallback fonts.
+   * Each font may have multiple variants (weights, styles, Unicode ranges)
+   */
+  fonts: FontConfig[];
+
+  /**
+   * The emoji provider to use when loading emoji assets.
+   * Examples: 'twemoji', 'fluent', 'noto', 'openmoji'
+   */
+  emojiProvider: EmojiProvider;
+}
+
+/**
  * Loads additional assets (emojis or fallback fonts) required for rendering OG images.
  *
- * This function handles two types of assets:
- * 1. Emojis: When code is 'emoji', it loads the appropriate emoji from the specified provider
- * 2. Fallback fonts: For other codes, it detects and loads Google Fonts needed to render the text segment
+ * This function is called by Satori when it encounters characters that need special handling:
  *
- * @param options - Configuration object containing:
- *   - code: Asset type identifier ('emoji' or other font-related codes)
- *   - segment: The text segment to analyze for required fonts/emojis
- *   - fonts: Array of font configurations to check against
- *   - emojiProvider: The emoji provider to use (e.g., 'twemoji', 'fluent', 'noto')
+ * **Emoji Loading (code === 'emoji'):**
+ * - Fetches the emoji SVG from the specified provider (e.g., Twemoji, Fluent)
+ * - Returns a base64-encoded data URI for embedding in the image
  *
+ * **Fallback Font Loading (code !== 'emoji'):**
+ * - Detects which Google Font files are needed to render the text segment
+ * - Downloads the font files in parallel for optimal performance
+ * - Returns an array of font configurations compatible with Satori
+ *
+ * @param options - Configuration object for asset loading
  * @returns Promise resolving to either:
- *   - Emoji data (when code is 'emoji')
- *   - Array of fallback font configurations compatible with Satori
+ *   - Emoji data URI (string) when code is 'emoji'
+ *   - Array of Satori font configurations when loading fallback fonts
+ *
+ * @example
+ * // Loading an emoji
+ * const emojiData = await loadAdditionalAsset({
+ *   code: 'emoji',
+ *   segment: '😀',
+ *   fonts: [],
+ *   emojiProvider: 'twemoji'
+ * });
+ *
+ * @example
+ * // Loading fallback fonts for special characters
+ * const fallbackFonts = await loadAdditionalAsset({
+ *   code: 'font',
+ *   segment: '你好',
+ *   fonts: [{ name: 'Inter', weight: 400 }],
+ *   emojiProvider: 'twemoji'
+ * });
  */
-export const loadAdditionalAsset = async (options: {
-  code: string;
-  segment: string;
-  fonts: FontConfig[];
-  emojiProvider: EmojiProvider;
-}) => {
+export const loadAdditionalAsset = async (
+  options: LoadAdditionalAssetOptions
+): Promise<string | SatoriOptions['fonts']> => {
   const { code, segment, fonts, emojiProvider } = options;
 
-  // Handle emoji loading separately
+  // Option 1: Handle emoji loading
+  // When Satori encounters an emoji character, it requests the emoji SVG
   if (code === 'emoji') {
     return await loadEmoji(emojiProvider, segment);
   }
 
-  // Initialize array to store fallback fonts for Satori rendering
+  // Option 2: Handle fallback font loading
+  // When Satori encounters text that requires additional fonts (e.g., CJK characters),
+  // we need to detect and load the appropriate Google Font files
+
+  // Initialize array to store all fallback font configurations
   const fallbackFonts: SatoriOptions['fonts'] = [];
 
-  // Process all fonts in parallel to detect which ones are needed for the text segment
+  // Process each font configuration in parallel to find required font files
   await Promise.all(
-    fonts.map(async (font) => {
-      const detector = new GoogleFontDetector(font);
-      const fonts = await detector.detect(segment);
+    fonts.map(async (fontConfig) => {
+      // Step 1: Detect which Google Font URLs are needed for this text segment
+      // The detector analyzes the Unicode characters and matches them to font subsets
+      const detector = new GoogleFontDetector(fontConfig);
+      const detectedFontUrls = await detector.detect(segment);
 
-      const fontsData = await Promise.all(
-        fonts.map(async (font) => {
-          return await loadFontFromUrl(font);
+      // Step 2: Download all detected font files in parallel
+      // This is more efficient than downloading them sequentially
+      const fontDataArray = await Promise.all(
+        detectedFontUrls.map(async (fontUrl) => {
+          return await loadFontFromUrl(fontUrl);
         })
       );
 
-      fontsData.forEach((fontData, index) => {
+      // Step 3: Create Satori font configurations for each downloaded font
+      // Each font gets a unique name with an index to avoid conflicts
+      fontDataArray.forEach((fontData, index) => {
         fallbackFonts.push({
-          name: `${font.name}-Fallback-${index}`,
+          // Generate unique name: e.g., "Inter-Fallback-0", "Inter-Fallback-1"
+          name: `${fontConfig.name}-Fallback-${index}`,
+
+          // The downloaded font binary data
           data: fontData,
-          style: font.style || 'normal',
-          weight: font.weight || 400,
+
+          // Inherit style from the original font config (default: 'normal')
+          style: fontConfig.style || 'normal',
+
+          // Inherit weight from the original font config (default: 400)
+          weight: fontConfig.weight || 400,
         });
       });
     })
