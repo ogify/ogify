@@ -199,6 +199,7 @@ renderer: ({ params }) => `
 Defines a new OG template.
 
 **Parameters:**
+
 - `id` (string): Unique identifier
 - `name` (string): Human-readable name
 - `description` (string): Template description
@@ -213,6 +214,7 @@ Defines a new OG template.
 Creates a new template renderer instance.
 
 **Parameters:**
+
 - `templates` (array): Array of template definitions
 - `defaultParams` (optional): Default parameters for all templates
 - `beforeRender` (optional): Hook called before rendering
@@ -225,6 +227,7 @@ Creates a new template renderer instance.
 Renders a template to a PNG buffer.
 
 **Parameters:**
+
 - `templateId` (string): ID of the template to render
 - `params` (object): Parameters to pass to the template
 - `options` (optional): Rendering options
@@ -274,6 +277,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Credits
 
 Built on top of:
+
 - [satori](https://github.com/vercel/satori) - SVG generation
 - [satori-html](https://github.com/vercel/satori-html) - HTML to VDOM conversion
 - [resvg-js](https://github.com/thx/resvg-js) - PNG conversion
