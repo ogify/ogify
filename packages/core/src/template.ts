@@ -1,353 +1,126 @@
 /**
- * Template management and validation utilities.
+ * OG image rendering engine.
  *
- * This module provides:
- * - Template definition and validation
- * - Template registry and lookup
- * - Template rendering orchestration
+ * This module provides the core rendering pipeline that converts
+ * HTML templates into PNG images suitable for Open Graph meta tags.
  *
- * Templates are the core building blocks of the OGify library.
- * They define how to convert parameters into OG images.
+ * The rendering process uses:
+ * - Satori: Converts HTML/CSS to SVG
+ * - Resvg: Converts SVG to PNG with high quality
  */
 
-import type { OGTemplate, TemplateHandlerConfig, TemplateParams } from './types';
-import { renderOgImage } from './renderer';
+import satori from 'satori';
+import { type SatoriOptions } from 'satori';
+import { html } from 'satori-html';
+
+import type { OgTemplate, OgTemplateParams } from './types';
+import { loadAdditionalAsset } from './utils/additional-asset-loader';
+import { loadFonts } from './utils/font-loader';
 
 /**
- * Validates that a template configuration has all required fields.
+ * Standard OG image dimensions recommended by the Open Graph protocol.
  *
- * This function performs structural validation to ensure the template
- * has all necessary properties. It does NOT validate:
- * - HTML function output
- * - Font availability
+ * These dimensions provide a 1.91:1 aspect ratio that works optimally
+ * across all major social media platforms:
+ * - Facebook: Recommends 1200x630
+ * - Twitter: Supports 1200x675
+ * - LinkedIn: Recommends 1200x630
+ * - Discord: Supports 1200x630
  *
- * Those validations happen at render time.
- *
- * @param config - The template configuration to validate
- * @returns true if validation passes
- * @throws Error if any required field is missing or invalid
- *
- * @example
- * try {
- *   validateTemplate(myTemplate);
- *   console.log('Template is valid!');
- * } catch (error) {
- *   console.error('Template validation failed:', error.message);
- * }
+ * @see https://ogp.me/#structured
  */
-export function validateTemplate(config: OGTemplate): boolean {
-  // Ensure template has a unique identifier
-  if (!config.id) {
-    throw new Error('Template must have an id');
-  }
-
-  // Ensure template has a human-readable name
-  if (!config.name) {
-    throw new Error('Template must have a name');
-  }
-
-  // Ensure template has an HTML rendering function
-  if (!config.html) {
-    throw new Error('Template must have an html function');
-  }
-
-  // All required fields are present
-  return true;
-}
+const DEFAULT_WIDTH = 1200;
+const DEFAULT_HEIGHT = 630;
 
 /**
- * Defines and validates a new OG template.
+ * Renders an OG template to a PNG image buffer.
  *
- * This is the primary way to create templates for use with the TemplateHandler.
- * It validates the template configuration and returns it for registration.
+ * **Rendering Pipeline:**
  *
- * **Benefits of using defineTemplate:**
- * - Early validation catches configuration errors
- * - Type safety ensures correct template structure
- * - Clear intent in code (self-documenting)
+ * 1. **Font Loading**: Load all fonts specified in the template
+ * 2. **HTML Generation**: Execute the template's renderer function with parameters
+ * 3. **HTML to Element Tree**: Convert HTML string to React-like element tree
+ * 4. **SVG Rendering**: Render element tree to SVG using Satori
+ * 5. **PNG Conversion**: Convert SVG to PNG using Resvg
  *
- * @param config - Complete template configuration including id, name, and html function
- * @returns The validated template configuration
- * @throws Error if validation fails
+ * @param template - The template definition to render
+ * @param params - Dynamic parameters to populate the template
+ * @param options - Optional rendering options
+ * @param options.width - Custom image width in pixels (default: 1200)
+ * @param options.height - Custom image height in pixels (default: 630)
+ * @returns Promise resolving to a PNG image buffer
  *
- * @example
- * const blogTemplate = defineTemplate({
- *   id: 'blog-post',
- *   name: 'Blog Post',
- *   description: 'Template for blog post OG images',
- *   html: ({ params }) => `
- *     <div style="display: flex; flex-direction: column; padding: 40px;">
- *       <h1 style="font-size: 60px;">${params.title}</h1>
- *       <p style="font-size: 30px;">${params.description}</p>
- *     </div>
- *   `,
- *   fonts: [
- *     { name: 'Inter', weight: 700 },
- *     { name: 'Inter', weight: 400 }
- *   ]
- * });
+ * @throws Will throw if:
+ *   - Font loading fails
+ *   - HTML generation fails
+ *   - SVG rendering fails
+ *   - PNG conversion fails
  */
-export function defineTemplate(config: OGTemplate): OGTemplate {
-  // Validate before returning to catch errors early
-  validateTemplate(config);
+export async function renderTemplate(
+  template: OgTemplate,
+  params: OgTemplateParams,
+  options?: { width: number; height: number }
+): Promise<Buffer> {
+  const width = options?.width || DEFAULT_WIDTH;
+  const height = options?.height || DEFAULT_HEIGHT;
 
-  return config;
-}
+  // Step 1: Load all fonts specified in the template
+  // Fonts are loaded in parallel for optimal performance
+  // The font loader handles three sources: data, URL, and Google Fonts
+  const satoriFonts: SatoriOptions['fonts'] = await loadFonts(template.fonts);
 
-/**
- * Template Handler class for managing multiple templates and rendering them to images.
- *
- * The TemplateHandler provides:
- * - Centralized template registry
- * - Template lookup by ID
- * - Unified rendering interface
- * - Lifecycle hooks for custom behavior
- *
- * **Use Cases:**
- * - Multi-tenant applications with different OG image styles
- * - CMS systems with customizable OG templates
- * - API services that generate OG images on demand
- * - Static site generators with multiple page types
- *
- * @example
- * const handler = new TemplateHandler({
- *   templates: [blogTemplate, productTemplate, authorTemplate],
- *   defaultParams: {
- *     brand: 'My Company',
- *     logo: 'https://example.com/logo.png'
- *   }
- * });
- *
- * // Render a specific template
- * const image = await handler.renderToImage('blog-post', {
- *   title: 'My Blog Post',
- *   description: 'An amazing article'
- * });
- */
-export class TemplateHandler {
-  /** Configuration including global settings and lifecycle hooks */
-  private config: TemplateHandlerConfig;
+  // Step 2: Generate HTML string from the template function
+  // The template receives the user parameters and width/height for responsive layouts
+  const htmlString = template.renderer({
+    params,
+    width,
+    height,
+  });
 
-  /**
-   * Internal registry mapping template IDs to template definitions.
-   *
-   * Using a Map provides:
-   * - O(1) lookup performance
-   * - Guaranteed insertion order
-   * - Better memory efficiency than objects
-   */
-  private templates: Map<string, OGTemplate> = new Map();
+  // Step 3: Convert HTML string to React-like element tree
+  // satori-html parses the HTML and creates a structure Satori can understand
+  const element = html(htmlString);
 
-  /**
-   * Creates a new TemplateHandler instance.
-   *
-   * @param config - Handler configuration with templates and global settings
-   *
-   * @example
-   * const handler = new TemplateHandler({
-   *   templates: [template1, template2],
-   *   beforeRender: async (id, params) => {
-   *     console.log(`Rendering ${id}`);
-   *   }
-   * });
-   */
-  constructor(config: TemplateHandlerConfig) {
-    this.config = config;
+  // Step 4: Render the element tree to SVG using Satori
+  // Satori converts the element tree to SVG with proper text rendering,
+  // layout calculations, and font embedding
+  const svg = await satori(element, {
+    // Image dimensions (customizable via options parameter)
+    width,
+    height,
 
-    // Register all provided templates on initialization
-    // This validates all templates early and builds the lookup index
-    this.registerTemplates(config.templates);
-  }
+    // Loaded fonts for text rendering
+    fonts: satoriFonts,
 
-  /**
-   * Registers multiple templates into the internal registry.
-   *
-   * Templates are indexed by their ID for fast lookup.
-   * If a template with the same ID already exists, it will be overwritten.
-   *
-   * @param templates - Array of template definitions to register
-   *
-   * @example
-   * // This is typically called internally by the constructor,
-   * // but can be used to add templates dynamically
-   * handler.registerTemplates([newTemplate1, newTemplate2]);
-   */
-  private registerTemplates(templates: OGTemplate[]): void {
-    for (const template of templates) {
-      // Store template in the registry using its ID as the key
-      this.templates.set(template.id, template);
-    }
-  }
+    // Embed fonts in the SVG for portability
+    embedFont: true,
 
-  /**
-   * Retrieves a template by its unique ID.
-   *
-   * This is useful for:
-   * - Checking if a template exists before rendering
-   * - Inspecting template configuration
-   * - Building template selection UIs
-   *
-   * @param id - The template ID to look up
-   * @returns The template definition, or undefined if not found
-   *
-   * @example
-   * const template = handler.getTemplate('blog-post');
-   * if (template) {
-   *   console.log(`Found template: ${template.name}`);
-   * } else {
-   *   console.log('Template not found');
-   * }
-   */
-  getTemplate(id: string): OGTemplate | undefined {
-    return this.templates.get(id);
-  }
+    // Dynamic asset loader for emojis and fallback fonts
+    // This is called when Satori encounters characters that need special handling
+    loadAdditionalAsset: async (code: string, segment: string) => {
+      return loadAdditionalAsset({
+        code, // Asset type ('emoji' or other)
+        segment, // The character(s) to load
+        fonts: template.fonts, // Available fonts for fallback detection
+        emojiProvider: template.emojiProvider || 'noto', // Emoji provider (default: noto)
+      });
+    },
+  });
 
-  /**
-   * Gets all registered template IDs.
-   *
-   * Useful for:
-   * - Building template selection dropdowns
-   * - Listing available templates in documentation
-   * - Debugging template registration
-   *
-   * @returns Array of template IDs
-   *
-   * @example
-   * const availableTemplates = handler.getTemplateIds();
-   * console.log('Available templates:', availableTemplates);
-   * // Output: ['blog-post', 'product-card', 'author-profile']
-   */
-  getTemplateIds(): string[] {
-    return Array.from(this.templates.keys());
-  }
+  // Step 5: Convert SVG to PNG using Resvg
+  // Resvg is a high-quality SVG renderer that produces sharp PNG images
+  const { renderAsync } = await import('@resvg/resvg-js');
 
-  /**
-   * Renders a template to a PNG image buffer.
-   *
-   * This is the main method for generating OG images. It:
-   * 1. Looks up the template by ID
-   * 2. Merges default params with user params
-   * 3. Calls lifecycle hooks (if configured)
-   * 4. Delegates to the core rendering engine
-   *
-   * **Parameter Merging:**
-   * User-provided parameters take precedence over default parameters.
-   *
-   * **Custom Dimensions:**
-   * You can override the default 1200x630 dimensions by providing custom width/height.
-   * This is useful for platform-specific requirements (e.g., Twitter, Instagram).
-   *
-   * **Error Handling:**
-   * - Throws if template is not found
-   * - Throws if rendering fails (font loading, HTML generation, etc.)
-   *
-   * @param templateId - ID of the template to render
-   * @param params - Parameters to pass to the template
-   * @param options - Optional rendering options
-   * @param options.width - Custom image width in pixels (default: 1200)
-   * @param options.height - Custom image height in pixels (default: 630)
-   * @returns Promise resolving to a PNG image buffer
-   * @throws Error if template is not found or rendering fails
-   *
-   * @example
-   * // Basic usage with default dimensions
-   * const imageBuffer = await handler.renderToImage('blog-post', {
-   *   title: 'My Blog Post',
-   *   author: 'John Doe'
-   * });
-   *
-   * @example
-   * // Custom dimensions for Twitter (1200x675)
-   * const twitterImage = await handler.renderToImage('blog-post', {
-   *   title: 'My Blog Post'
-   * }, {
-   *   width: 1200,
-   *   height: 675
-   * });
-   *
-   * @example
-   * // Save to file
-   * import { writeFile } from 'fs/promises';
-   * const buffer = await handler.renderToImage('blog-post', params);
-   * await writeFile('og-image.png', buffer);
-   *
-   * @example
-   * // Return from API endpoint
-   * export async function GET(request: Request) {
-   *   const { searchParams } = new URL(request.url);
-   *   const title = searchParams.get('title') || 'Default Title';
-   *
-   *   const imageBuffer = await handler.renderToImage('blog-post', { title });
-   *
-   *   return new Response(imageBuffer, {
-   *     headers: {
-   *       'Content-Type': 'image/png',
-   *       'Cache-Control': 'public, max-age=31536000, immutable'
-   *     }
-   *   });
-   * }
-   */
-  async renderToImage(
-    templateId: string,
-    params: TemplateParams,
-    options?: { width: number; height: number }
-  ): Promise<Buffer> {
-    // Step 1: Look up the template in the registry
-    const template = this.getTemplate(templateId);
+  // Render SVG to PNG with width-based scaling
+  // The 'width' mode maintains aspect ratio while ensuring the image matches the specified width
+  const pngData = await renderAsync(svg, {
+    fitTo: {
+      mode: 'width', // Scale based on width, maintain aspect ratio
+      value: width,
+    },
+  });
 
-    // Step 2: Fail fast if template doesn't exist
-    if (!template) {
-      throw new Error(`Template '${templateId}' not found`);
-    }
-
-    // Step 3: Merge default params with user params (user params take precedence)
-    const mergedParams = {
-      ...this.config.defaultParams,
-      ...params,
-    };
-
-    // Step 4: Call beforeRender hook if configured
-    if (this.config.beforeRender) {
-      await this.config.beforeRender(templateId, mergedParams);
-    }
-
-    // Step 5: Delegate to the core rendering function
-    const imageBuffer = await renderOgImage(template, mergedParams, options);
-
-    // Step 6: Call afterRender hook if configured
-    if (this.config.afterRender) {
-      await this.config.afterRender(templateId, mergedParams);
-    }
-
-    // Step 7: Return the generated image buffer
-    return imageBuffer;
-  }
-}
-
-/**
- * Factory function to create a new TemplateHandler instance.
- *
- * This is a convenience wrapper around the TemplateHandler constructor.
- * It provides a more functional API style for those who prefer it.
- *
- * **When to use this vs `new TemplateHandler()`:**
- * - Use this for a more functional style
- * - Use `new TemplateHandler()` for a more OOP style
- * - Both are functionally equivalent
- *
- * @param config - Handler configuration with templates and settings
- * @returns A new TemplateHandler instance
- *
- * @example
- * const handler = createTemplateHandler({
- *   templates: [blogTemplate, productTemplate],
- *   defaultParams: { brand: 'My Company' }
- * });
- *
- * const image = await handler.renderToImage('blog-post', {
- *   title: 'Hello World'
- * });
- */
-export function createTemplateHandler(config: TemplateHandlerConfig): TemplateHandler {
-  return new TemplateHandler(config);
+  // Step 6: Convert Uint8Array to Node.js Buffer for compatibility
+  // Buffer is more widely supported in Node.js ecosystems
+  return Buffer.from(pngData.asPng());
 }

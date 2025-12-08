@@ -9,14 +9,14 @@
  * - Utility functions for parameter merging and caching
  */
 
-// Template management: defineTemplate, validateTemplate, TemplateHandler, createTemplateHandler
-export * from './template';
-
-// Image rendering: renderOgImage function for converting templates to PNG
+// Template management: defineTemplate, validateTemplate, TemplateRenderer, createTemplateRenderer
 export * from './renderer';
+
+// Image rendering: renderTemplate function for converting templates to PNG
+export * from './template';
 
 // Utility functions: deepMerge, mergeParams, mergeFonts, generateCacheKey, etc.
 export * from './utils/fetcher';
 
-// Type definitions: OGTemplate, TemplateParams, FontConfig, TemplateHandlerConfig, etc.
+// Type definitions: OgTemplate, OgTemplateParams, OgFontConfig, OgTemplateRenderer, etc.
 export * from './types';

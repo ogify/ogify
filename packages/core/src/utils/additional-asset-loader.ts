@@ -11,7 +11,7 @@
 
 import type { SatoriOptions } from 'satori';
 
-import type { FontConfig, EmojiProvider } from '../types';
+import type { OgFontConfig, OgEmojiProvider } from '../types';
 import { GoogleFontDetector } from './google-font-detector';
 import { loadEmoji } from './emoji-loader';
 import { loadFontFromUrl } from './fetcher';
@@ -38,13 +38,13 @@ interface LoadAdditionalAssetOptions {
    * Array of font configurations to check for fallback fonts.
    * Each font may have multiple variants (weights, styles, Unicode ranges)
    */
-  fonts: FontConfig[];
+  fonts: OgFontConfig[];
 
   /**
    * The emoji provider to use when loading emoji assets.
    * Examples: 'twemoji', 'fluent', 'noto', 'openmoji'
    */
-  emojiProvider: EmojiProvider;
+  emojiProvider: OgEmojiProvider;
 }
 
 /**

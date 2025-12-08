@@ -12,7 +12,7 @@
 
 /*! Copyright Twitter Inc. and other contributors. Licensed under MIT */
 
-import { EmojiProvider } from '../types';
+import { OgEmojiProvider } from '../types';
 
 // Unicode constants for emoji processing
 const ZERO_WIDTH_JOINER = String.fromCharCode(8205); // U+200D - joins multiple emojis
@@ -92,7 +92,7 @@ function toCodePoint(unicodeSurrogates: string): string {
  * - fluent: Microsoft's Fluent emoji (3D style with color)
  * - fluentFlat: Microsoft's Fluent emoji (flat 2D style)
  */
-export const apis: Record<EmojiProvider, string | ((code: string) => string)> = {
+export const apis: Record<OgEmojiProvider, string | ((code: string) => string)> = {
   twemoji: (code: string) =>
     `https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/${code.toLowerCase()}.svg`,
 
@@ -132,7 +132,7 @@ const cache: Record<string, Promise<string>> = {};
  * const emojiData = await loadEmoji('twemoji', '😀');
  * // Returns: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0i..."
  */
-export async function loadEmoji(type: EmojiProvider, text: string): Promise<string> {
+export async function loadEmoji(type: OgEmojiProvider, text: string): Promise<string> {
   // Convert emoji character to its code point representation
   const code = getIconCode(text);
 

@@ -10,7 +10,7 @@
  * Inspired by https://github.com/vercel/satori/blob/main/playground/utils/font.ts
  */
 
-import { FontConfig } from '../types';
+import { OgFontConfig } from '../types';
 
 /**
  * User-Agent strings for different font formats.
@@ -134,9 +134,9 @@ export class GoogleFontDetector {
   } = {};
 
   /** The font configuration to detect */
-  private font: FontConfig;
+  private font: OgFontConfig;
 
-  constructor(font: FontConfig) {
+  constructor(font: OgFontConfig) {
     this.font = font;
   }
 

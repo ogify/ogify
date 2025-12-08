@@ -21,7 +21,13 @@ import type { FontStyle, FontWeight } from 'satori';
  * - `blobmoji`: Google's blob-style emoji (deprecated but still available)
  * - `openmoji`: Open-source emoji with outlined style
  */
-export type EmojiProvider = 'twemoji' | 'fluent' | 'fluentFlat' | 'noto' | 'blobmoji' | 'openmoji';
+export type OgEmojiProvider =
+  | 'twemoji'
+  | 'fluent'
+  | 'fluentFlat'
+  | 'noto'
+  | 'blobmoji'
+  | 'openmoji';
 
 /**
  * Supported font file formats.
@@ -29,7 +35,7 @@ export type EmojiProvider = 'twemoji' | 'fluent' | 'fluentFlat' | 'noto' | 'blob
  * - `woff`: Web Open Font Format (modern, compressed)
  * - `ttf`: TrueType Font (legacy, larger file size)
  */
-export type FontFormat = 'woff' | 'ttf';
+export type OgFontFormat = 'woff' | 'ttf';
 
 /**
  * Configuration for a font used in OG image templates.
@@ -41,7 +47,7 @@ export type FontFormat = 'woff' | 'ttf';
  *
  * @example
  * // Load from Google Fonts (automatic)
- * const font1: FontConfig = {
+ * const font1: OgFontConfig = {
  *   name: 'Inter',
  *   weight: 400,
  *   style: 'normal'
@@ -49,7 +55,7 @@ export type FontFormat = 'woff' | 'ttf';
  *
  * @example
  * // Load from custom URL
- * const font2: FontConfig = {
+ * const font2: OgFontConfig = {
  *   name: 'CustomFont',
  *   url: 'https://example.com/font.woff2',
  *   weight: 700
@@ -57,13 +63,13 @@ export type FontFormat = 'woff' | 'ttf';
  *
  * @example
  * // Load from pre-loaded data
- * const font3: FontConfig = {
+ * const font3: OgFontConfig = {
  *   name: 'MyFont',
  *   data: fontBuffer,
  *   weight: 400
  * };
  */
-export type FontConfig = {
+export type OgFontConfig = {
   /** The font family name (e.g., 'Inter', 'Roboto', 'Merriweather') */
   name: string;
 
@@ -80,7 +86,7 @@ export type FontConfig = {
   data?: Buffer | ArrayBuffer;
 
   /** Font file format (default: 'woff') */
-  format?: FontFormat;
+  format?: OgFontFormat;
 };
 
 /**
@@ -90,23 +96,23 @@ export type FontConfig = {
  * Templates use these props to generate dynamic HTML content.
  *
  * @example
- * const html = (props: TemplateProps) => `
+ * const html = (props: OgTemplateOptions) => `
  *   <div style="width: ${props.width}px; height: ${props.height}px">
  *     <h1>${props.params.title}</h1>
  *     <p>${props.params.description}</p>
  *   </div>
  * `;
  */
-export interface TemplateProps {
+export type OgTemplateOptions = {
   /** User-provided parameters that populate the template (e.g., title, description, author) */
-  params: TemplateParams;
+  params: OgTemplateParams;
 
   /** Optional custom width in pixels (default: 1200) */
   width?: number;
 
   /** Optional custom height in pixels (default: 630) */
   height?: number;
-}
+};
 
 /**
  * Key-value pairs representing dynamic template parameters.
@@ -118,14 +124,14 @@ export interface TemplateProps {
  * - Booleans: Flags, toggles, states
  *
  * @example
- * const params: TemplateParams = {
+ * const params: OgTemplateParams = {
  *   title: 'My Blog Post',
  *   author: 'John Doe',
  *   views: 1234,
  *   published: true
  * };
  */
-export type TemplateParams = Record<string, string | number | boolean>;
+export type OgTemplateParams = Record<string, string | number | boolean>;
 
 /**
  * Complete definition of an Open Graph image template.
@@ -135,29 +141,8 @@ export type TemplateParams = Record<string, string | number | boolean>;
  * - How to render HTML from parameters
  * - What fonts to use
  * - Metadata for identification
- *
- * Templates are registered with a TemplateHandler and can be
- * rendered to PNG images on demand.
- *
- * @example
- * const blogTemplate: OGTemplate = {
- *   id: 'blog-post',
- *   name: 'Blog Post',
- *   description: 'Template for blog post OG images',
- *   html: ({ params }) => `
- *     <div style="display: flex; flex-direction: column;">
- *       <h1>${params.title}</h1>
- *       <p>${params.description}</p>
- *     </div>
- *   `,
- *   fonts: [
- *     { name: 'Inter', weight: 700 },
- *     { name: 'Inter', weight: 400 }
- *   ],
- *   emojiProvider: 'twemoji'
- * };
  */
-export interface OGTemplate {
+export type OgTemplate = {
   /** Unique identifier for this template (e.g., 'blog-post', 'product-card') */
   id: string;
 
@@ -173,7 +158,7 @@ export interface OGTemplate {
    * The HTML should use inline styles (Tailwind-like utilities are supported).
    * Flexbox and basic CSS properties are supported by Satori.
    */
-  html: (props: TemplateProps) => string;
+  renderer: (props: OgTemplateOptions) => string;
 
   /**
    * Custom fonts to use in this template.
@@ -181,41 +166,26 @@ export interface OGTemplate {
    * Fonts are loaded in the order specified and should cover
    * all characters used in the template.
    */
-  fonts: FontConfig[];
+  fonts: OgFontConfig[];
 
   /**
    * Optional emoji provider to use in this template.
    *
    * If not specified, defaults to 'noto'.
    */
-  emojiProvider?: EmojiProvider;
-}
+  emojiProvider?: OgEmojiProvider;
+};
 
 /**
- * Configuration for the TemplateHandler class.
+ * Configuration for the TemplateRenderer class.
  *
  * Defines available templates, global defaults, and lifecycle hooks.
  * The handler manages a registry of templates and provides a unified
  * interface for rendering them to images.
- *
- * @example
- * const config: TemplateHandlerConfig = {
- *   templates: [blogTemplate, productTemplate],
- *   defaultParams: {
- *     brand: 'My Company',
- *     logo: 'https://example.com/logo.png'
- *   },
- *   beforeRender: async (templateId, params) => {
- *     console.log(`Rendering ${templateId} with params:`, params);
- *   },
- *   afterRender: async (templateId, params) => {
- *     console.log(`Rendered ${templateId} successfully`);
- *   }
- * };
  */
-export interface TemplateHandlerConfig {
+export type OgTemplateRenderer = {
   /** Array of template definitions to register */
-  templates: OGTemplate[];
+  templates: OgTemplate[];
 
   /**
    * Default parameter values applied to all templates.
@@ -223,7 +193,7 @@ export interface TemplateHandlerConfig {
    * These values are merged with user-provided parameters,
    * with user values taking precedence.
    */
-  defaultParams?: TemplateParams;
+  defaultParams?: OgTemplateParams;
 
   /**
    * Hook called before rendering.
@@ -234,7 +204,7 @@ export interface TemplateHandlerConfig {
    * - Authentication checks
    * - Rate limiting
    */
-  beforeRender?: (templateId: string, params: TemplateParams) => void | Promise<void>;
+  beforeRender?: (templateId: string, params: OgTemplateParams) => void | Promise<void>;
 
   /**
    * Hook called after rendering.
@@ -245,5 +215,9 @@ export interface TemplateHandlerConfig {
    * - Sending notifications
    * - Updating metrics
    */
-  afterRender?: (templateId: string, params: TemplateParams) => void | Promise<void>;
-}
+  afterRender?: (
+    templateId: string,
+    params: OgTemplateParams,
+    imageBuffer: Buffer
+  ) => void | Promise<void>;
+};

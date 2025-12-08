@@ -9,7 +9,7 @@
 
 import type { Font } from 'satori';
 
-import type { FontConfig } from '../types';
+import type { OgFontConfig } from '../types';
 import { GoogleFontDetector } from './google-font-detector';
 import { loadFontFromUrl } from './fetcher';
 
@@ -28,7 +28,7 @@ import { loadFontFromUrl } from './fetcher';
  *   { name: 'Roboto', weight: 700, style: 'italic' }
  * ]);
  */
-export const loadFonts = async (fonts: FontConfig[]): Promise<Font[]> => {
+export const loadFonts = async (fonts: OgFontConfig[]): Promise<Font[]> => {
   // Load all fonts in parallel for better performance
   const loadedFonts = await Promise.all(fonts.map((font) => loadFont(font)));
 
@@ -47,7 +47,7 @@ export const loadFonts = async (fonts: FontConfig[]): Promise<Font[]> => {
  * @param font - Font configuration specifying name, weight, style, and source
  * @returns Promise resolving to a Font object, or null if loading fails
  */
-export const loadFont = async (font: FontConfig): Promise<Font | null> => {
+export const loadFont = async (font: OgFontConfig): Promise<Font | null> => {
   // Strategy 1: Load font from pre-loaded binary data
   // This is the fastest option as no network request is needed
   if (font.data) {
