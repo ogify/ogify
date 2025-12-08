@@ -19,7 +19,11 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "author": {
     "name": "Hung Pham - @revolabs-io",
@@ -27,13 +31,16 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "satori": "^0.18.3",
-    "satori-html": "^0.3.2",
-    "@resvg/resvg-js": "^2.6.2"
+    "satori-html": "^0.3.2"
   },
   "devDependencies": {
     "@types/node": "^18",
+    "@vitest/ui": "^4.0.15",
+    "happy-dom": "^20.0.11",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
   }
 }

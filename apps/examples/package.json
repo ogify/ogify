@@ -6,7 +6,11 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsx index.ts"
+    "dev": "tsx index.ts",
+    "test": "echo 'No tests available'",
+    "test:watch": "echo 'No tests available'",
+    "test:ui": "echo 'No tests available'",
+    "test:coverage": "echo 'No tests available'"
   },
   "dependencies": {
     "@ogify/core": "workspace:*"
