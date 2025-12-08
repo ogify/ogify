@@ -2,43 +2,31 @@
  * Configuration for custom fonts used in OG image templates.
  * Fonts must be provided as binary data (ArrayBuffer or Buffer).
  */
-export type FontConfig =
-  | {
-      /** The font family name (e.g., 'Inter', 'Roboto') */
-      name: string;
 
-      /** Binary font data loaded from a .ttf, .otf, or .woff file */
-      data: ArrayBuffer | Buffer;
+import type { FontStyle, FontWeight } from 'satori';
 
-      /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
-      weight?: number;
+export type EmojiProvider = 'twemoji' | 'fluent' | 'fluentFlat' | 'noto' | 'blobmoji' | 'openmoji';
 
-      /** Font style variant */
-      style?: 'normal' | 'italic';
-    }
-  | {
-      /** The font family name (e.g., 'Inter', 'Roboto') */
-      name: string;
+export type FontFormat = 'woff' | 'ttf';
 
-      /** URL to the font file (e.g., 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap') */
-      url: string;
+export type FontConfig = {
+  /** The font family name (e.g., 'Inter', 'Roboto') */
+  name: string;
 
-      /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
-      weight?: number;
+  // Font weight (e.g., 100, 200, 300, 400, 500, 600, 700, 800, 900)
+  weight?: FontWeight;
 
-      /** Font style variant */
-      style?: 'normal' | 'italic';
-    }
-  | {
-      /** The font family name (e.g., 'Inter', 'Roboto') */
-      name: string;
-      /** URL to the font file (e.g., 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap') */
-      urls: string[];
-      /** Font weight (100-900). Common values: 300 (light), 400 (regular), 700 (bold) */
-      weight?: number;
-      /** Font style variant */
-      style?: 'normal' | 'italic';
-    };
+  // Font style (e.g., 'normal', 'italic')
+  style?: FontStyle;
+
+  // URL to the font file
+  url?: string;
+
+  // Font data (ArrayBuffer or Buffer)
+  data?: Buffer | ArrayBuffer;
+
+  format?: FontFormat;
+};
 
 /**
  * Props passed to template HTML rendering functions.
@@ -48,8 +36,6 @@ export interface TemplateProps {
   /** User-provided parameters that populate the template (e.g., title, description, author) */
   params: TemplateParams;
 
-  fonts: TemplateFonts;
-
   /** Optional custom width in pixels (default: 1200) */
   width?: number;
 
@@ -57,18 +43,6 @@ export interface TemplateProps {
   height?: number;
 }
 
-export interface TemplateFonts
-  extends Record<
-    string,
-    {
-      className: string;
-      style: {
-        fontFamily: string;
-        fontWeight?: number;
-        fontStyle?: string;
-      };
-    }
-  > {}
 /**
  * Key-value pairs representing dynamic template parameters.
  * Values can be strings (text content), numbers (counts, dates), or booleans (flags).
@@ -126,8 +100,11 @@ export interface OGTemplate {
   /** Schema defining expected parameters and their types */
   schema: TemplateSchema;
 
-  /** Optional custom fonts to use in this template */
+  /** Custom fonts to use in this template */
   fonts: FontConfig[];
+
+  /** Optional emoji provider to use in this template */
+  emojiProvider?: EmojiProvider;
 }
 
 /**
@@ -140,9 +117,6 @@ export interface TemplateHandlerConfig {
 
   /** Default parameter values applied to all templates */
   defaultParams?: TemplateParams;
-
-  /** Global fonts available to all templates */
-  fonts?: FontConfig[];
 
   /** Hook called before rendering (useful for logging, analytics, validation) */
   beforeRender?: (templateId: string, params: TemplateParams) => void | Promise<void>;

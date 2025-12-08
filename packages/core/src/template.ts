@@ -3,7 +3,7 @@ import { renderOgImage } from './renderer';
 
 /**
  * Validates that a template configuration has all required fields.
- * 
+ *
  * @param config - The template configuration to validate
  * @returns true if validation passes
  * @throws Error if any required field is missing
@@ -35,11 +35,11 @@ export function validateTemplate(config: OGTemplate): boolean {
 /**
  * Define and validate a new OG template.
  * This is the primary way to create templates for use with the TemplateHandler.
- * 
+ *
  * @param config - Complete template configuration including id, name, html function, and schema
  * @returns The validated template configuration
  * @throws Error if validation fails
- * 
+ *
  * @example
  * const myTemplate = defineTemplate({
  *   id: 'blog-post',
@@ -63,13 +63,13 @@ export function defineTemplate(config: OGTemplate): OGTemplate {
 export class TemplateHandler {
   /** Configuration including global settings and lifecycle hooks */
   private config: TemplateHandlerConfig;
-  
+
   /** Internal registry mapping template IDs to template definitions */
   private templates: Map<string, OGTemplate> = new Map();
 
   /**
    * Creates a new TemplateHandler instance.
-   * 
+   *
    * @param config - Handler configuration with templates and global settings
    */
   constructor(config: TemplateHandlerConfig) {
@@ -81,7 +81,7 @@ export class TemplateHandler {
   /**
    * Registers multiple templates into the internal registry.
    * Templates are indexed by their ID for fast lookup.
-   * 
+   *
    * @param templates - Array of template definitions to register
    */
   private registerTemplates(templates: OGTemplate[]): void {
@@ -92,7 +92,7 @@ export class TemplateHandler {
 
   /**
    * Retrieves a template by its unique ID.
-   * 
+   *
    * @param id - The template ID to look up
    * @returns The template definition, or undefined if not found
    */
@@ -102,12 +102,12 @@ export class TemplateHandler {
 
   /**
    * Renders a template to a PNG image buffer.
-   * 
+   *
    * @param templateId - ID of the template to render
    * @param params - Parameters to pass to the template
    * @returns Promise resolving to a PNG image buffer
    * @throws Error if template is not found
-   * 
+   *
    * @example
    * const imageBuffer = await handler.renderToImage('blog-post', {
    *   title: 'My Blog Post',
@@ -131,10 +131,10 @@ export class TemplateHandler {
 /**
  * Factory function to create a new TemplateHandler instance.
  * Convenience wrapper around the TemplateHandler constructor.
- * 
+ *
  * @param config - Handler configuration with templates and settings
  * @returns A new TemplateHandler instance
- * 
+ *
  * @example
  * const handler = createTemplateHandler({
  *   templates: [blogTemplate, productTemplate],
