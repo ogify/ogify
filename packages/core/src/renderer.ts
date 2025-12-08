@@ -173,9 +173,10 @@ export class TemplateRenderer {
    */
   async renderToImage(
     templateId: string,
-    params: OgTemplateParams,
+    params: OgTemplateParams | (() => Promise<OgTemplateParams>),
     options?: { width: number; height: number }
   ): Promise<Buffer> {
+    const { defaultParams } = this.config;
     // Step 1: Look up the template in the registry
     const template = this.getTemplate(templateId);
 
@@ -185,9 +186,9 @@ export class TemplateRenderer {
     }
 
     // Step 3: Merge default params with user params (user params take precedence)
-    const mergedParams = {
-      ...this.config.defaultParams,
-      ...params,
+    const mergedParams: OgTemplateParams = {
+      ...(typeof defaultParams === 'function' ? await defaultParams() : defaultParams),
+      ...(typeof params === 'function' ? await params() : params),
     };
 
     // Step 4: Call beforeRender hook if configured

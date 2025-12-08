@@ -193,7 +193,7 @@ export type OgTemplateRenderer = {
    * These values are merged with user-provided parameters,
    * with user values taking precedence.
    */
-  defaultParams?: OgTemplateParams;
+  defaultParams?: OgTemplateParams | (() => Promise<OgTemplateParams>);
 
   /**
    * Hook called before rendering.

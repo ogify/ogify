@@ -58,7 +58,7 @@ const DEFAULT_HEIGHT = 630;
  */
 export async function renderTemplate(
   template: OgTemplate,
-  params: OgTemplateParams,
+  params: OgTemplateParams | (() => Promise<OgTemplateParams>),
   options?: { width: number; height: number }
 ): Promise<Buffer> {
   const width = options?.width || DEFAULT_WIDTH;
@@ -71,8 +71,8 @@ export async function renderTemplate(
 
   // Step 2: Generate HTML string from the template function
   // The template receives the user parameters and width/height for responsive layouts
-  const htmlString = template.renderer({
-    params,
+  const htmlString = await template.renderer({
+    params: typeof params === 'function' ? await params() : params,
     width,
     height,
   });
