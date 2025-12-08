@@ -1,66 +1,45 @@
-import { createTemplateHandler, defineTemplate, TemplateProps } from '@ogify/core';
+import { createTemplateRenderer, defineTemplate, OgTemplateOptions } from '@ogify/core';
 import { writeFile } from 'node:fs/promises';
 
 const template = defineTemplate({
   id: 'minimal',
   name: 'Minimal',
   description: 'A clean, minimal template for Open Graph images',
-  schema: {
-    title: {
-      defaultValue: 'Title',
-      required: true,
-      type: 'string',
-    },
-    description: {
-      defaultValue: 'Description',
-      required: false,
-      type: 'string',
-    },
-  },
   fonts: [
     {
       name: 'Roboto',
-      urls: [
-        'https://fonts.gstatic.com/s/roboto/v49/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmUiA8.ttf',
-        'https://fonts.gstatic.com/s/roboto/v49/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmbiA8.ttf',
-        'https://fonts.gstatic.com/s/roboto/v49/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmXiA8.ttf',
-      ],
       weight: 400,
-      style: 'normal',
     },
     {
-      name: 'StoryScript',
-      urls: [
-        'https://fonts.gstatic.com/s/storyscript/v3/mem5YaSw02SQ0OlzDuR8IskOUuhs.ttf',
-        'https://fonts.gstatic.com/s/storyscript/v3/mem5YaSw02SQ0OlzDuR8IskOXehs.ttf',
-      ],
-      weight: 400,
-      style: 'normal',
+      name: 'Roboto',
+      weight: 700,
+    },
+    {
+      name: 'Merriweather',
     },
   ],
-  html: ({ params, fonts }: TemplateProps) => {
+  renderer: ({ params }: OgTemplateOptions) => {
     const { title, description } = params;
-    console.log(fonts);
     return `
       <div class="flex flex-col items-center justify-center w-full h-full bg-white text-black p-4">
-        <h1 class="font-normal text-[50px] text-center mb-5 ${fonts.Roboto.className}">
+        <div style="font-family: Roboto" class="flex text-[50px] text-center mb-5">
           ${title}
-        </h1>
+        </div>
 
-        <p class="font-bold text-[50px] text-center opacity-80 leading-relaxed ${fonts.StoryScript.className}">
-          ${description}
-        </p>
+        <div class="flex text-[50px] text-center mb-5">
+          👋 😄 🎉 🎄 🦋
+        </div>
         
-        <p class="font-normal text-[50px] text-center opacity-80 leading-relaxed ${fonts.StoryScript.className}">
+        <div style="font-family: Merriweather" class="flex font-normal text-[50px] text-center opacity-80 leading-relaxed">
           ${description}
-        </p>
+        </div>
       </div>
     `.trim();
   },
 });
 
 // Create a template handler with the built-in templates
-const handler = createTemplateHandler({
+const handler = createTemplateRenderer({
   templates: [template],
 });
 
@@ -68,11 +47,14 @@ async function main() {
   try {
     // Render the template to an image buffer
     try {
-      const imageBuffer = await handler.renderToImage('minimal', {
-        title:
-          'Α α, Β β, Γ γ, Δ δ, Ε ε, Ζ ζ, Η η, Θ θ, Ι ι, Κ κCộng hòa xã hội <span class="font-bold">chủ nghĩa</span> việt nam',
-        description: 'Ẳ Ấ Ố Ữ',
-      });
+      const imageBuffer = await handler.renderToImage(
+        'minimal',
+        {
+          title: 'Cộng hòa xã hội chủ nghĩa Việt Nam',
+          description: 'Độc lập - Tự do - Hạnh phúc',
+        },
+        { width: 1200, height: 675 }
+      );
       await writeFile('output.png', imageBuffer);
     } catch (error) {
       console.error('Error rendering image:', error);
