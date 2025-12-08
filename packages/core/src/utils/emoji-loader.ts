@@ -113,7 +113,7 @@ export const apis: Record<EmojiProvider, string | ((code: string) => string)> = 
  * Cache for storing emoji data URIs to avoid redundant network requests.
  * Key format: "{provider}:{codePoint}" (e.g., "twemoji:1f600")
  */
-const emojiCache: Record<string, Promise<string>> = {};
+const cache: Record<string, Promise<string>> = {};
 
 /**
  * Loads an emoji SVG from a CDN provider and converts it to a base64 data URI.
@@ -140,8 +140,8 @@ export async function loadEmoji(type: EmojiProvider, text: string): Promise<stri
   const cacheKey = `${type}:${code}`;
 
   // Return cached result if available
-  if (cacheKey in emojiCache) {
-    return emojiCache[cacheKey];
+  if (cacheKey in cache) {
+    return cache[cacheKey];
   }
 
   // Fallback to 'noto' if provider is invalid or not specified
@@ -165,7 +165,7 @@ export async function loadEmoji(type: EmojiProvider, text: string): Promise<stri
     .then((svgContent) => `data:image/svg+xml;base64,${btoa(svgContent)}`);
 
   // Cache the promise to prevent duplicate requests
-  emojiCache[cacheKey] = emojiPromise;
+  cache[cacheKey] = emojiPromise;
 
   return emojiPromise;
 }
