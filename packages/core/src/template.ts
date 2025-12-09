@@ -12,6 +12,7 @@
 import satori from 'satori';
 import { type SatoriOptions } from 'satori';
 import { html } from 'satori-html';
+import { renderAsync } from '@resvg/resvg-js';
 
 import type { OgTemplate, OgTemplateParams } from './types';
 import { loadAdditionalAsset } from './utils/additional-asset-loader';
@@ -109,8 +110,6 @@ export async function renderTemplate(
 
   // Step 5: Convert SVG to PNG using Resvg
   // Resvg is a high-quality SVG renderer that produces sharp PNG images
-  const { renderAsync } = await import('@resvg/resvg-js');
-
   // Render SVG to PNG with width-based scaling
   // The 'width' mode maintains aspect ratio while ensuring the image matches the specified width
   const pngData = await renderAsync(svg, {
