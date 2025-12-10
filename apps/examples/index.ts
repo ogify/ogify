@@ -1,4 +1,4 @@
-import { createTemplateRenderer, defineTemplate, OgTemplateOptions } from '@ogify/core';
+import { createRenderer, defineTemplate, OgTemplateOptions } from '@ogify/core';
 import { writeFile } from 'node:fs/promises';
 
 const template = defineTemplate({
@@ -39,7 +39,7 @@ const template = defineTemplate({
 });
 
 // Create a template handler with the built-in templates
-const handler = createTemplateRenderer({
+const handler = createRenderer({
   templates: [template],
   cache: {
     type: 'memory',
