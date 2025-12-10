@@ -53,8 +53,9 @@ async function main() {
       const imageBuffer = await handler.renderToImage(
         'minimal',
         {
-          title: 'Cộng hòa xã hội chủ nghĩa Việt Nam',
-          description: 'Độc lập - Tự do - Hạnh phúc',
+          title: 'Lorem ipsum dolor sit amet consectetur adipiscing elit',
+          description:
+            'Lorem ipsum dolor sit amet consectetur adipiscing elit. Lorem ipsum dolor sit amet consectetur adipiscing elit.',
         },
         { width: 1200, height: 675 }
       );
