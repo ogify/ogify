@@ -282,6 +282,7 @@ Templates support a subset of CSS properties via Satori. See [Satori CSS](https:
 - **Background**: `backgroundColor`, `backgroundImage`
 - **Border**: `border`, `borderRadius`
 - **Size**: `width`, `height`, `maxWidth`, `maxHeight`
+- ...
 
 ### Tailwind-like Utilities
 
