@@ -41,6 +41,9 @@ const template = defineTemplate({
 // Create a template handler with the built-in templates
 const handler = createTemplateRenderer({
   templates: [template],
+  cache: {
+    type: 'memory',
+  },
 });
 
 async function main() {
@@ -65,5 +68,13 @@ async function main() {
 }
 
 (async () => {
+  console.log('Example started...');
+  const start = Date.now();
   await main();
+  const end = Date.now();
+  console.log(`Example ended in ${end - start}ms`);
+
+  await main();
+  const finish = Date.now();
+  console.log(`Example finished in ${finish - end}ms`);
 })();

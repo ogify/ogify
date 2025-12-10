@@ -16,7 +16,7 @@
     "@ogify/core": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^18",
+    "@types/node": "^20",
     "tsx": "^4.7.0",
     "typescript": "^5.9.3"
   }

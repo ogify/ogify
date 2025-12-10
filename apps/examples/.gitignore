@@ -1,6 +1,7 @@
 # dependencies
 node_modules
 
+
 # TypeScript
 .tsbuildinfo
 
@@ -36,3 +37,6 @@ yarn-error.log*
 #IDE
 .idea
 .vercel
+
+#Ogify
+.ogify-cache
