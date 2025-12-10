@@ -48,7 +48,6 @@ const handler = createRenderer({
 
 async function main() {
   try {
-    // Render the template to an image buffer
     try {
       const imageBuffer = await handler.renderToImage(
         'minimal',
@@ -73,9 +72,9 @@ async function main() {
   const start = Date.now();
   await main();
   const end = Date.now();
-  console.log(`Example ended in ${end - start}ms`);
+  console.log(`Example 1 finished in ${end - start}ms`);
 
   await main();
   const finish = Date.now();
-  console.log(`Example finished in ${finish - end}ms`);
+  console.log(`Example 2 finished in ${finish - end}ms`);
 })();
