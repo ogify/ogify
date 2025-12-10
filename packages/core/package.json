@@ -1,6 +1,6 @@
 {
   "name": "@ogify/core",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "Core types and utilities for OGify Open Graph image generator",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -36,7 +36,7 @@
     "satori-html": "^0.3.2"
   },
   "devDependencies": {
-    "@types/node": "^18",
+    "@types/node": "^20",
     "@vitest/ui": "^4.0.15",
     "happy-dom": "^20.0.11",
     "tsup": "^8.5.1",
