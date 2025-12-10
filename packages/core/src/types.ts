@@ -30,6 +30,33 @@ export type OgEmojiProvider =
   | 'openmoji';
 
 /**
+ * Cache configuration for fonts and icons.
+ *
+ * Supports two caching strategies:
+ * - Memory: Fast in-memory cache with LRU eviction
+ * - Filesystem: Persistent cache stored on disk
+ */
+export type OgCacheConfig =
+  | {
+      /** Memory-based caching strategy */
+      type: 'memory';
+      /** Time-to-live in milliseconds (default: 3600000 = 1 hour) */
+      ttl?: number;
+      /** Maximum number of items to cache (default: 100) */
+      max?: number;
+    }
+  | {
+      /** Filesystem-based caching strategy */
+      type: 'filesystem';
+      /** Directory to store cache files (default: '.ogify-cache') */
+      dir?: string;
+      /** Time-to-live in milliseconds (default: 3600000 = 1 hour) */
+      ttl?: number;
+      /** Maximum number of items to cache (default: 100) */
+      max?: number;
+    };
+
+/**
  * Supported font file formats.
  *
  * - `woff`: Web Open Font Format (modern, compressed)
@@ -194,6 +221,18 @@ export type OgTemplateRenderer = {
    * with user values taking precedence.
    */
   defaultParams?: OgTemplateParams | (() => Promise<OgTemplateParams>);
+
+  /**
+   * Cache configuration for fonts and icons.
+   *
+   * When provided, enables LRU caching to improve performance by:
+   * - Reducing redundant network requests for fonts and emojis
+   * - Supporting memory or filesystem-based caching strategies
+   * - Configurable TTL and maximum cache size
+   *
+   * If not provided, falls back to simple in-memory caching.
+   */
+  cache?: OgCacheConfig;
 
   /**
    * Hook called before rendering.

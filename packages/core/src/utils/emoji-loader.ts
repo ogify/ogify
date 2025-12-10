@@ -13,6 +13,7 @@
 /*! Copyright Twitter Inc. and other contributors. Licensed under MIT */
 
 import { OgEmojiProvider } from '../types';
+import { CacheManager } from './cache-manager';
 
 // Unicode constants for emoji processing
 const ZERO_WIDTH_JOINER = String.fromCharCode(8205); // U+200D - joins multiple emojis
@@ -113,7 +114,9 @@ export const apis: Record<OgEmojiProvider, string | ((code: string) => string)> 
  * Cache for storing emoji data URIs to avoid redundant network requests.
  * Key format: "{provider}:{codePoint}" (e.g., "twemoji:1f600")
  */
-const cache: Record<string, Promise<string>> = {};
+const cache = new CacheManager({
+  type: 'memory',
+});
 
 /**
  * Loads an emoji SVG from a CDN provider and converts it to a base64 data URI.
@@ -140,8 +143,9 @@ export async function loadEmoji(type: OgEmojiProvider, text: string): Promise<st
   const cacheKey = `${type}:${code}`;
 
   // Return cached result if available
-  if (cacheKey in cache) {
-    return cache[cacheKey];
+  const cached = await cache.get(cacheKey);
+  if (cached) {
+    return cached.toString();
   }
 
   // Fallback to 'noto' if provider is invalid or not specified
@@ -165,7 +169,7 @@ export async function loadEmoji(type: OgEmojiProvider, text: string): Promise<st
     .then((svgContent) => `data:image/svg+xml;base64,${btoa(svgContent)}`);
 
   // Cache the promise to prevent duplicate requests
-  cache[cacheKey] = emojiPromise;
+  await cache.set(cacheKey, Buffer.from(await emojiPromise));
 
   return emojiPromise;
 }

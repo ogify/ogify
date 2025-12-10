@@ -16,7 +16,7 @@ export * from './renderer';
 export * from './template';
 
 // Utility functions: deepMerge, mergeParams, mergeFonts, generateCacheKey, etc.
-export * from './utils/fetcher';
+export * from './utils/font-fetcher';
 
 // Type definitions: OgTemplate, OgTemplateParams, OgFontConfig, OgTemplateRenderer, etc.
 export * from './types';

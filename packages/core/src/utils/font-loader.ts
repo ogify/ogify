@@ -11,7 +11,7 @@ import type { Font } from 'satori';
 
 import type { OgFontConfig } from '../types';
 import { GoogleFontDetector } from './google-font-detector';
-import { loadFontFromUrl } from './fetcher';
+import { loadFontFromUrl } from './font-fetcher';
 
 /**
  * Loads multiple fonts in parallel and filters out any that failed to load.

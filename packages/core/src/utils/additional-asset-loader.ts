@@ -14,7 +14,7 @@ import type { SatoriOptions } from 'satori';
 import type { OgFontConfig, OgEmojiProvider } from '../types';
 import { GoogleFontDetector } from './google-font-detector';
 import { loadEmoji } from './emoji-loader';
-import { loadFontFromUrl } from './fetcher';
+import { loadFontFromUrl } from './font-fetcher';
 
 /**
  * Options for loading additional assets during OG image rendering.

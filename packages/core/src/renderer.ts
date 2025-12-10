@@ -10,7 +10,7 @@
  * They define how to convert parameters into OG images.
  */
 
-import type { OgTemplate, OgTemplateRenderer, OgTemplateParams } from './types';
+import type { OgTemplate, OgTemplateRenderer, OgTemplateParams, OgCacheConfig } from './types';
 import { renderTemplate } from './template';
 
 /**
@@ -69,12 +69,21 @@ export function defineTemplate(config: OgTemplate): OgTemplate {
   return config;
 }
 
+import { CacheManager } from './utils/cache-manager';
+
+const DEFAULT_CACHE: OgCacheConfig = {
+  type: 'memory',
+};
+
 /**
  * Template Handler class for managing multiple templates and rendering them to images.
  */
 export class TemplateRenderer {
   /** Configuration including global settings and lifecycle hooks */
   private config: OgTemplateRenderer;
+
+  /** Cache manager for fonts and icons */
+  private cacheManager: CacheManager<string, Buffer>;
 
   /**
    * Internal registry mapping template IDs to template definitions.
@@ -93,6 +102,9 @@ export class TemplateRenderer {
    */
   constructor(config: OgTemplateRenderer) {
     this.config = config;
+
+    // Initialize cache manager if configuration is provided
+    this.cacheManager = new CacheManager(config.cache || DEFAULT_CACHE);
 
     // Register all provided templates on initialization
     // This validates all templates early and builds the lookup index
@@ -191,6 +203,17 @@ export class TemplateRenderer {
       ...(typeof params === 'function' ? await params() : params),
     };
 
+    const cacheKey = this.cacheManager.generateKey({
+      templateId,
+      ...mergedParams,
+      ...options,
+    });
+
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     // Step 4: Call beforeRender hook if configured
     if (this.config.beforeRender) {
       await this.config.beforeRender(templateId, mergedParams);
@@ -198,6 +221,8 @@ export class TemplateRenderer {
 
     // Step 5: Delegate to the core rendering function
     const imageBuffer = await renderTemplate(template, mergedParams, options);
+
+    await this.cacheManager.set(cacheKey, imageBuffer);
 
     // Step 6: Call afterRender hook if configured
     if (this.config.afterRender) {
