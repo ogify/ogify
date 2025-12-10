@@ -54,6 +54,9 @@ importers:
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2
+      lru-cache:
+        specifier: ^11.2.4
+        version: 11.2.4
       satori:
         specifier: ^0.18.3
         version: 0.18.3
@@ -79,43 +82,6 @@ importers:
       vitest:
         specifier: ^4.0.15
         version: 4.0.15(@types/node@20.19.25)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(tsx@4.21.0)
-    optionalDependencies:
-      '@resvg/resvg-js-android-arm-eabi':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-android-arm64':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-darwin-arm64':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-darwin-x64':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-linux-arm-gnueabihf':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-linux-arm64-gnu':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-linux-arm64-musl':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-linux-x64-gnu':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-linux-x64-musl':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-win32-arm64-msvc':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-win32-ia32-msvc':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@resvg/resvg-js-win32-x64-msvc':
-        specifier: ^2.6.2
-        version: 2.6.2
 
 packages:
 
@@ -1353,6 +1319,10 @@ packages:
 
   lodash.startcase@4.4.0:
     resolution: {integrity: sha512-+WKqsK294HMSc2jEbNgpHpd0JfIBhp7rEV4aqXWqFr6AlXov+SlcgB1Fv01y2kGe3Gc8nMW7VA0SrGuSkRfIEg==}
+
+  lru-cache@11.2.4:
+    resolution: {integrity: sha512-B5Y16Jr9LB9dHVkh6ZevG+vAbOsNOYCX+sXvFWFu7B3Iz5mijW3zdbMyhsh8ANd2mSWBYdJgnqi+mL7/LrOPYg==}
+    engines: {node: 20 || >=22}
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -3053,6 +3023,8 @@ snapshots:
   lodash.merge@4.6.2: {}
 
   lodash.startcase@4.4.0: {}
+
+  lru-cache@11.2.4: {}
 
   magic-string@0.30.21:
     dependencies:
