@@ -1,18 +1,18 @@
-# OGify - Beautiful Dynamic OG Images in Seconds
+# OGify - Generate beautiful OG images in minutes
 
 [![npm version](https://badge.fury.io/js/%40ogify%2Fcore.svg)](https://badge.fury.io/js/%40ogify%2Fcore)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-Generate stunning Open Graph images in seconds, not hours. OGify eliminates the complexity of OG image generation with zero-config font loading, automatic caching, and production-ready templates.
+Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just copy & paste the production-ready templates.
 
 ## ⚡ Why OGify?
 
-- 🔌 **Zero-config**: Works out of the box with Next.js, Remix, Astro, etc.
-- 🎨 **No font management**: Just specify a Google Font name - no downloads, no font files, no hassle.
-- 📦 **No asset pipeline**: Emojis load dynamically from CDNs.
-- 🖼️ **Rich templates**: OGify provides a set of production-ready templates with zero configuration.
-- ⚡ **Smart caching**: OGify automatically caches fonts, emojis, and generated images - no configuration required.
+- 🔌 **Zero-config**: Works out of the box with Next.js, Remix, Nuxt, and more.
+- 🔤 **Hassle-free assets**: Just specify a Google Font name, Emoji provider - no downloads, no font files, no hassle.
+- 🎨 **Flexible Customization**: Intuitive API & Tailwind-like syntax helps building eye-catching templates faster.
+- 🖼️ **Production-ready templates**: OGify provides a set of production-ready templates with zero configuration.
+- ⚡ **Smart caching**: Automatically caches fonts, emojis, and generated images - no configuration required.
 - 🛡️ **Type-safe**: Full TypeScript support catches errors before runtime.
 
 ## 📦 Installation
@@ -21,11 +21,23 @@ Generate stunning Open Graph images in seconds, not hours. OGify eliminates the 
 pnpm add @ogify/core
 ```
 
+or
+
+```bash
+npm install @ogify/core
+```
+
+or
+
+```bash
+yarn add @ogify/core
+```
+
 ## 🚀 Quick Start
 
 ### 1. Define a Template
 
-Create a template using `defineTemplate` with an HTML renderer function:
+Create a template using `defineTemplate` or copy/paste one of the [production-ready templates](https://ogify.dev/templates) provided by OGify.
 
 ```typescript
 import { defineTemplate, OgTemplateOptions } from '@ogify/core';
@@ -35,8 +47,8 @@ const blogTemplate = defineTemplate({
   name: 'Blog Post',
   description: 'Template for blog post OG images',
   fonts: [
-    { name: 'Inter', weight: 700 },
-    { name: 'Inter', weight: 400 }
+    { name: 'Inter', weight: 400 },
+    { name: 'Inter', weight: 700 }
   ],
   renderer: ({ params }: OgTemplateOptions) => {
     return `
@@ -58,9 +70,9 @@ const blogTemplate = defineTemplate({
 Create a renderer instance and register your templates:
 
 ```typescript
-import { createTemplateRenderer } from '@ogify/core';
+import { createRenderer } from '@ogify/core';
 
-const renderer = createTemplateRenderer({
+const renderer = createRenderer({
   templates: [blogTemplate],
   defaultParams: {
     brand: 'My Company'
@@ -99,23 +111,24 @@ Traditional approach (manual setup):
 ```typescript
 // ❌ Manual: Download fonts, manage files, configure paths
 import fs from 'fs';
-const fontData = fs.readFileSync('./fonts/Inter-Bold.ttf');
-const font2Data = fs.readFileSync('./fonts/Inter-Regular.ttf');
+
+const fontData = fs.readFileSync('./fonts/Inter-Regular.ttf');
+const font2Data = fs.readFileSync('./fonts/Inter-Bold.ttf');
 
 const fonts = [
-  { name: 'Inter', data: fontData, weight: 700 },
-  { name: 'Inter', data: font2Data, weight: 400 }
+  { name: 'Inter', data: fontData, weight: 400 },
+  { name: 'Inter', data: font2Data, weight: 700 }
 ];
 ```
 
-OGify approach (zero config):
+OGify approach (zero-config):
 
 ```typescript
 // ✅ OGify: Just specify the font name - we handle the rest
 const template = defineTemplate({
   fonts: [
-    { name: 'Inter', weight: 700 },  // Automatically loaded from Google Fonts
-    { name: 'Inter', weight: 400 }
+    { name: 'Inter', weight: 400 },  // Automatically loaded from Google Fonts
+    { name: 'Inter', weight: 700 }
   ],
   // ...
 });
@@ -187,7 +200,7 @@ const template = defineTemplate({
   name: 'Emoji Template',
   description: 'Template with emoji support',
   fonts: [{ name: 'Inter', weight: 400 }],
-  emojiProvider: 'twemoji', // or 'fluent', 'noto', 'openmoji', etc.
+  emojiProvider: 'twemoji', // 'fluent' | 'fluentFlat' | 'noto' | 'blobmoji' | 'openmoji'
   renderer: ({ params }) => `
     <div>
       <h1>${params.title}</h1>
@@ -202,7 +215,7 @@ const template = defineTemplate({
 Add custom logic before and after rendering:
 
 ```typescript
-const renderer = createTemplateRenderer({
+const renderer = createRenderer({
   templates: [blogTemplate],
   beforeRender: async (templateId, params) => {
     console.log(`Rendering ${templateId}`, params);
@@ -211,6 +224,33 @@ const renderer = createTemplateRenderer({
   afterRender: async (templateId, params, imageBuffer) => {
     console.log(`Rendered ${templateId} successfully`);
     // Cache image, send notifications, etc.
+  }
+});
+```
+
+### Caching Configuration
+
+Configure caching strategy for fonts and emojis/icons:
+
+```typescript
+// Memory Cache (default)
+const memoryRenderer = createRenderer({
+  templates: [blogTemplate],
+  cache: {
+    type: 'memory',
+    ttl: 3600000, // 1 hour
+    max: 100 // max items
+  }
+});
+
+// Filesystem Cache
+const fsRenderer = createRenderer({
+  templates: [blogTemplate],
+  cache: {
+    type: 'filesystem',
+    dir: './.ogify-cache', // cache directory
+    ttl: 3600000, // 1 hour
+    max: 100 // max items
   }
 });
 ```
@@ -234,7 +274,7 @@ const twitterImage = await renderer.renderToImage('blog-post', params, {
 
 ### Supported CSS Properties
 
-Templates support a subset of CSS properties via Satori:
+Templates support a subset of CSS properties via Satori. See [Satori CSS](https://github.com/vercel/satori?tab=readme-ov-file#css) for more details.
 
 - **Layout**: `display: flex`, `flexDirection`, `alignItems`, `justifyContent`
 - **Spacing**: `padding`, `margin`, `gap`
@@ -265,15 +305,15 @@ Defines a new OG template.
 **Parameters:**
 
 - `id` (string): Unique identifier
-- `name` (string): Human-readable name
-- `description` (string): Template description
+- `name` (optional): Human-readable name
+- `description` (optional): Template description
 - `renderer` (function): Function that returns HTML string
 - `fonts` (array): Array of font configurations
 - `emojiProvider` (optional): Emoji provider to use
 
 **Returns:** `OgTemplate`
 
-### `createTemplateRenderer(config)`
+### `createRenderer(config)`
 
 Creates a new template renderer instance.
 
@@ -281,6 +321,7 @@ Creates a new template renderer instance.
 
 - `templates` (array): Array of template definitions
 - `defaultParams` (optional): Default parameters for all templates
+- `cache` (optional): Cache configuration object
 - `beforeRender` (optional): Hook called before rendering
 - `afterRender` (optional): Hook called after rendering
 
@@ -316,7 +357,7 @@ Gets all registered template IDs.
 
 ### **Automatic Caching (Zero Config)**
 
-OGify automatically caches fonts and emojis in memory - no configuration required:
+OGify automatically caches fonts, emojis, and generated images in memory - no configuration required
 
 ```typescript
 // First render: Downloads fonts from Google Fonts (~500ms)
@@ -347,4 +388,5 @@ Built on top of:
 
 - [satori](https://github.com/vercel/satori) - SVG generation
 - [satori-html](https://github.com/vercel/satori-html) - HTML to VDOM conversion
-- [resvg-js](https://github.com/thx/resvg-js) - PNG conversion
+- [@resvg/resvg-js](https://github.com/thx/resvg-js) - SVG to PNG conversion
+- [lru-cache](https://github.com/isaacs/node-lru-cache) - LRU cache
