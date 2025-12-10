@@ -3,7 +3,7 @@ import {
   validateTemplate,
   defineTemplate,
   TemplateRenderer,
-  createTemplateRenderer,
+  createRenderer,
 } from '../src/renderer';
 import type { OgTemplate, OgTemplateRenderer } from '../src/types';
 import * as templateModule from '../src/template';
@@ -30,11 +30,6 @@ describe('Renderer Module', () => {
     it('should throw if id is missing', () => {
       const invalid = { ...mockTemplate, id: '' };
       expect(() => validateTemplate(invalid)).toThrow('Template must have an id');
-    });
-
-    it('should throw if name is missing', () => {
-      const invalid = { ...mockTemplate, name: '' };
-      expect(() => validateTemplate(invalid)).toThrow('Template must have a name');
     });
 
     it('should throw if renderer is missing', () => {
@@ -144,9 +139,9 @@ describe('Renderer Module', () => {
     });
   });
 
-  describe('createTemplateRenderer', () => {
+  describe('createRenderer', () => {
     it('should create a new instance', () => {
-      const instance = createTemplateRenderer({ templates: [] });
+      const instance = createRenderer({ templates: [] });
       expect(instance).toBeInstanceOf(TemplateRenderer);
     });
   });

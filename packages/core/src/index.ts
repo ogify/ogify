@@ -9,7 +9,7 @@
  * - Utility functions for parameter merging and caching
  */
 
-// Template management: defineTemplate, validateTemplate, TemplateRenderer, createTemplateRenderer
+// Template management: defineTemplate, validateTemplate, TemplateRenderer, createRenderer
 export * from './renderer';
 
 // Image rendering: renderTemplate function for converting templates to PNG

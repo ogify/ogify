@@ -174,10 +174,10 @@ export type OgTemplate = {
   id: string;
 
   /** Human-readable name for display purposes */
-  name: string;
+  name?: string;
 
   /** Brief description of what this template is used for */
-  description: string;
+  description?: string;
 
   /**
    * Function that generates HTML markup from template parameters.

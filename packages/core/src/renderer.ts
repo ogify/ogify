@@ -12,6 +12,7 @@
 
 import type { OgTemplate, OgTemplateRenderer, OgTemplateParams, OgCacheConfig } from './types';
 import { renderTemplate } from './template';
+import { CacheManager } from './utils/cache-manager';
 
 /**
  * Validates that a template configuration has all required fields.
@@ -31,11 +32,6 @@ export function validateTemplate(config: OgTemplate): boolean {
   // Ensure template has a unique identifier
   if (!config.id) {
     throw new Error('Template must have an id');
-  }
-
-  // Ensure template has a human-readable name
-  if (!config.name) {
-    throw new Error('Template must have a name');
   }
 
   // Ensure template has a renderer function
@@ -68,8 +64,6 @@ export function defineTemplate(config: OgTemplate): OgTemplate {
 
   return config;
 }
-
-import { CacheManager } from './utils/cache-manager';
 
 const DEFAULT_CACHE: OgCacheConfig = {
   type: 'memory',
@@ -243,6 +237,6 @@ export class TemplateRenderer {
  * @param config - Handler configuration with templates and settings
  * @returns A new TemplateRenderer instance
  */
-export function createTemplateRenderer(config: OgTemplateRenderer): TemplateRenderer {
+export function createRenderer(config: OgTemplateRenderer): TemplateRenderer {
   return new TemplateRenderer(config);
 }
