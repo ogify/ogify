@@ -85,7 +85,8 @@ export async function renderTemplate(
   // Step 4: Render the element tree to SVG using Satori
   // Satori converts the element tree to SVG with proper text rendering,
   // layout calculations, and font embedding
-  const svg = await satori(element, {
+  // eslint-disable-next-line
+  const svg = await satori(element as any, {
     // Image dimensions (customizable via options parameter)
     width,
     height,

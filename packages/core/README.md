@@ -50,6 +50,9 @@ const blogTemplate = defineTemplate({
     { name: 'Inter', weight: 400 },
     { name: 'Inter', weight: 700 }
   ],
+  /**
+   * sharedParams?: OgTemplateParams | (() => Promise<OgTemplateParams>);
+   */
   renderer: ({ params }: OgTemplateOptions) => {
     return `
       <div style="display: flex; flex-direction: column; width: 100%; height: 100%; background: white; padding: 40px;">
@@ -74,7 +77,7 @@ import { createRenderer } from '@ogify/core';
 
 const renderer = createRenderer({
   templates: [blogTemplate],
-  defaultParams: {
+  sharedParams: {
     brand: 'My Company'
   }
 });
@@ -321,7 +324,7 @@ Creates a new template renderer instance.
 **Parameters:**
 
 - `templates` (array): Array of template definitions
-- `defaultParams` (optional): Default parameters for all templates
+- `sharedParams` (optional): Default parameters for all templates
 - `cache` (optional): Cache configuration object
 - `beforeRender` (optional): Hook called before rendering
 - `afterRender` (optional): Hook called after rendering

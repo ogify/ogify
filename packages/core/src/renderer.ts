@@ -182,7 +182,7 @@ export class TemplateRenderer {
     params: OgTemplateParams | (() => Promise<OgTemplateParams>),
     options?: { width: number; height: number }
   ): Promise<Buffer> {
-    const { defaultParams } = this.config;
+    const { sharedParams } = this.config;
     // Step 1: Look up the template in the registry
     const template = this.getTemplate(templateId);
 
@@ -191,9 +191,9 @@ export class TemplateRenderer {
       throw new Error(`Template '${templateId}' not found`);
     }
 
-    // Step 3: Merge default params with user params (user params take precedence)
+    // Step 3: Merge shared params with user params (user params take precedence)
     const mergedParams: OgTemplateParams = {
-      ...(typeof defaultParams === 'function' ? await defaultParams() : defaultParams),
+      ...(typeof sharedParams === 'function' ? await sharedParams() : sharedParams),
       ...(typeof params === 'function' ? await params() : params),
     };
 

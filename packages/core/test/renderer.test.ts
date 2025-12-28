@@ -55,7 +55,7 @@ describe('Renderer Module', () => {
     let renderer: TemplateRenderer;
     const mockConfig: OgTemplateRenderer = {
       templates: [mockTemplate],
-      defaultParams: { default: 'value' },
+      sharedParams: { default: 'value' },
     };
 
     beforeEach(() => {

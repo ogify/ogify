@@ -130,9 +130,9 @@ export type OgFontConfig = {
  *   </div>
  * `;
  */
-export type OgTemplateOptions = {
+export type OgTemplateOptions<TParams = OgTemplateParams> = {
   /** User-provided parameters that populate the template (e.g., title, description, author) */
-  params: OgTemplateParams;
+  params: TParams;
 
   /** Optional custom width in pixels (default: 1200) */
   width?: number;
@@ -169,7 +169,7 @@ export type OgTemplateParams = Record<string, string | number | boolean>;
  * - What fonts to use
  * - Metadata for identification
  */
-export type OgTemplate = {
+export type OgTemplate<TParams = OgTemplateParams> = {
   /** Unique identifier for this template (e.g., 'blog-post', 'product-card') */
   id: string;
 
@@ -185,7 +185,7 @@ export type OgTemplate = {
    * The HTML should use inline styles (Tailwind-like utilities are supported).
    * Flexbox and basic CSS properties are supported by Satori.
    */
-  renderer: (props: OgTemplateOptions) => string;
+  renderer: (props: OgTemplateOptions<TParams>) => string;
 
   /**
    * Custom fonts to use in this template.
@@ -215,12 +215,12 @@ export type OgTemplateRenderer = {
   templates: OgTemplate[];
 
   /**
-   * Default parameter values applied to all templates.
+   * Shared parameter values applied to all templates.
    *
    * These values are merged with user-provided parameters,
    * with user values taking precedence.
    */
-  defaultParams?: OgTemplateParams | (() => Promise<OgTemplateParams>);
+  sharedParams?: OgTemplateParams | (() => Promise<OgTemplateParams>);
 
   /**
    * Cache configuration for fonts and icons.
