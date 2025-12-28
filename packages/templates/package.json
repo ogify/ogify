@@ -1,0 +1,39 @@
+{
+  "name": "@ogify/templates",
+  "version": "0.0.1",
+  "description": "Pre-designed templates for OGify",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./minimalism": {
+      "types": "./dist/minimalism/index.d.ts",
+      "import": "./dist/minimalism/index.mjs",
+      "require": "./dist/minimalism/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "vitest run"
+  },
+  "author": {
+    "name": "Hung Pham - @revolabs-io",
+    "email": "info@revolabs.io"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@ogify/core": "*"
+  },
+  "devDependencies": {
+    "@ogify/core": "workspace:*",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
