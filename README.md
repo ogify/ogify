@@ -74,7 +74,7 @@ import { createRenderer } from '@ogify/core';
 
 const renderer = createRenderer({
   templates: [blogTemplate],
-  defaultParams: {
+  sharedParams: {
     brand: 'My Company'
   }
 });
@@ -321,7 +321,7 @@ Creates a new template renderer instance.
 **Parameters:**
 
 - `templates` (array): Array of template definitions
-- `defaultParams` (optional): Default parameters for all templates
+- `sharedParams` (optional): Default parameters for all templates
 - `cache` (optional): Cache configuration object
 - `beforeRender` (optional): Hook called before rendering
 - `afterRender` (optional): Hook called after rendering

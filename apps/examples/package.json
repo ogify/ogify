@@ -13,7 +13,8 @@
     "test:coverage": "echo 'No tests available'"
   },
   "dependencies": {
-    "@ogify/core": "workspace:*"
+    "@ogify/core": "workspace:*",
+    "@ogify/templates": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20",
