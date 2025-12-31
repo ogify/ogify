@@ -11,6 +11,7 @@ export type TemplateParams = {
   primaryColor?: string;
   secondaryColor?: string;
   textColor?: string;
+  pattern?: string;
 };
 
 const template = defineTemplate<TemplateParams>({
@@ -35,9 +36,10 @@ const template = defineTemplate<TemplateParams>({
       brandLogo = '',
       layout = 'aligned',
       primaryColor = '#4c8f5f',
-      secondaryColor = '#faf8f5',
+      secondaryColor = '#000',
       textColor = '#ffffff',
       extras = [],
+      pattern = 'https://www.transparenttextures.com/patterns/cubes.png',
     } = params;
 
     const backgroundStyles = {
@@ -51,6 +53,8 @@ const template = defineTemplate<TemplateParams>({
 
     if (layout === 'aligned') {
       return `<div class="flex flex-col items-start justify-center h-full w-full px-24" style="${objectToStyle(backgroundStyles, { isRTL })}">
+          <div class="absolute flex inset-0 opacity-30" style="background-image: url(${pattern})"></div>
+
           ${brandLogo ? `<img class="mb-6 h-18" src="${brandLogo}" alt="${brandName}" />` : ''}
 
           <h1 class="mb-6 text-[56px] font-bold">${title}</h1>
@@ -58,9 +62,13 @@ const template = defineTemplate<TemplateParams>({
           <p class="mb-6 text-[32px] opacity-80">${subtitle}</p>
 
           <div class="mt-6 flex items-center">
-            <div class="flex h-1 w-16 bg-current opacity-30 mr-6"></div>
-            <p class="text-[24px] opacity-60">${[brandName, ...extras].filter(Boolean).join(' — ')}</p>
+            <div class="flex items-center rounded-full border border-white/40 bg-white/20 px-4 py-2 text-[24px] leading-none">
+              <span class="h-2 w-2 rounded-full bg-white mr-2"></span>
+              <span>${brandName}</span>
+            </div>
+            <p class="ml-6 text-[24px] opacity-60">${extras.filter(Boolean).join(' — ')}</p>
           </div>
+          
         </div>`;
     }
 
