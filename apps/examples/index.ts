@@ -23,7 +23,7 @@ async function main() {
           subtitle:
             'Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just copy & paste the production-ready templates.',
           brandLogo: 'https://ogify.dev/logo.svg',
-          brandName: 'Ogify',
+          brandName: 'Revolabs Team',
           extras: ['ogify.dev'],
         },
         {
