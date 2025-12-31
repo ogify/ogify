@@ -33,6 +33,7 @@
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "lru-cache": "^11.2.4",
+    "rtl-css-js": "^1.16.1",
     "satori": "^0.18.3",
     "satori-html": "^0.3.2"
   },

@@ -142,6 +142,8 @@ export type OgTemplateOptions = {
 
   /** Optional custom height in pixels (default: 630) */
   height?: number;
+
+  isRTL?: boolean;
 };
 
 /**

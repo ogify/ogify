@@ -20,3 +20,4 @@ export * from './utils/font-fetcher';
 
 // Type definitions: OgTemplate, OgTemplateParams, OgFontConfig, OgTemplateRenderer, etc.
 export * from './types';
+export * from './utils/object-to-style';
