@@ -43,9 +43,6 @@ Create a template using `defineTemplate` or copy/paste one of the [production-re
 import { defineTemplate, OgTemplateOptions } from '@ogify/core';
 
 const blogTemplate = defineTemplate({
-  id: 'blog-post',
-  name: 'Blog Post',
-  description: 'Template for blog post OG images',
   fonts: [
     { name: 'Inter', weight: 400 },
     { name: 'Inter', weight: 700 }
@@ -76,7 +73,7 @@ Create a renderer instance and register your templates:
 import { createRenderer } from '@ogify/core';
 
 const renderer = createRenderer({
-  templates: [blogTemplate],
+  templates: { 'blog-post': blogTemplate },
   sharedParams: {
     brand: 'My Company'
   }
@@ -176,9 +173,6 @@ Load fonts from Google Fonts, custom URLs, or embedded data:
 
 ```typescript
 const template = defineTemplate({
-  id: 'custom-fonts',
-  name: 'Custom Fonts Template',
-  description: 'Template with custom fonts',
   fonts: [
     // Google Fonts (automatic)
     { name: 'Roboto', weight: 400 },
@@ -199,9 +193,6 @@ Choose from multiple emoji providers:
 
 ```typescript
 const template = defineTemplate({
-  id: 'emoji-template',
-  name: 'Emoji Template',
-  description: 'Template with emoji support',
   fonts: [{ name: 'Inter', weight: 400 }],
   emojiProvider: 'twemoji', // 'fluent' | 'fluentFlat' | 'noto' | 'blobmoji' | 'openmoji'
   renderer: ({ params }) => `
@@ -219,7 +210,7 @@ Add custom logic before and after rendering:
 
 ```typescript
 const renderer = createRenderer({
-  templates: [blogTemplate],
+  templates: { 'blog-post': blogTemplate },
   beforeRender: async (templateId, params) => {
     console.log(`Rendering ${templateId}`, params);
     // Log analytics, validate params, etc.
@@ -238,7 +229,7 @@ Configure caching strategy for fonts and emojis/icons:
 ```typescript
 // Memory Cache (default)
 const memoryRenderer = createRenderer({
-  templates: [blogTemplate],
+  templates: { 'blog-post': blogTemplate },
   cache: {
     type: 'memory',
     ttl: 3600000, // 1 hour
@@ -248,7 +239,7 @@ const memoryRenderer = createRenderer({
 
 // Filesystem Cache
 const fsRenderer = createRenderer({
-  templates: [blogTemplate],
+  templates: { 'blog-post': blogTemplate },
   cache: {
     type: 'filesystem',
     dir: './.ogify-cache', // cache directory
@@ -308,9 +299,6 @@ Defines a new OG template.
 
 **Parameters:**
 
-- `id` (string): Unique identifier
-- `name` (optional): Human-readable name
-- `description` (optional): Template description
 - `renderer` (function): Function that returns HTML string
 - `fonts` (array): Array of font configurations
 - `emojiProvider` (optional): Emoji provider to use
@@ -323,7 +311,7 @@ Creates a new template renderer instance.
 
 **Parameters:**
 
-- `templates` (array): Array of template definitions
+- `templates` (object): Map of template definitions keyed by ID
 - `sharedParams` (optional): Default parameters for all templates
 - `cache` (optional): Cache configuration object
 - `beforeRender` (optional): Hook called before rendering
@@ -351,11 +339,7 @@ Retrieves a template by ID.
 
 **Returns:** `OgTemplate | undefined`
 
-### `renderer.getTemplateIds()`
-
-Gets all registered template IDs.
-
-**Returns:** `string[]`
+**Returns:** `OgTemplate | undefined`
 
 ## ⚡ Performance & Production
 

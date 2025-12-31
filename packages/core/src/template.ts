@@ -57,9 +57,9 @@ const DEFAULT_HEIGHT = 630;
  *   - SVG rendering fails
  *   - PNG conversion fails
  */
-export async function renderTemplate(
-  template: OgTemplate,
-  params: OgTemplateParams | (() => Promise<OgTemplateParams>),
+export async function renderTemplate<TParams>(
+  template: OgTemplate<TParams>,
+  params: TParams,
   options?: { width: number; height: number }
 ): Promise<Buffer> {
   const width = options?.width || DEFAULT_WIDTH;

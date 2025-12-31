@@ -28,12 +28,7 @@ import { CacheManager } from './utils/cache-manager';
  * @returns true if validation passes
  * @throws Error if any required field is missing or invalid
  */
-export function validateTemplate(config: OgTemplate): boolean {
-  // Ensure template has a unique identifier
-  if (!config.id) {
-    throw new Error('Template must have an id');
-  }
-
+export function validateTemplate<TemplateParams>(config: OgTemplate<TemplateParams>): boolean {
   // Ensure template has a renderer function
   if (typeof config.renderer !== 'function') {
     throw new Error('Template must have a renderer function');
@@ -58,9 +53,11 @@ export function validateTemplate(config: OgTemplate): boolean {
  * @returns The validated template configuration
  * @throws Error if validation fails
  */
-export function defineTemplate(config: OgTemplate): OgTemplate {
+export function defineTemplate<TemplateParams>(
+  config: OgTemplate<TemplateParams>
+): OgTemplate<TemplateParams> {
   // Validate before returning to catch errors early
-  validateTemplate(config);
+  validateTemplate<TemplateParams>(config);
 
   return config;
 }
@@ -72,9 +69,11 @@ const DEFAULT_CACHE: OgCacheConfig = {
 /**
  * Template Handler class for managing multiple templates and rendering them to images.
  */
-export class TemplateRenderer {
+export class TemplateRenderer<
+  TMap extends Record<string, OgTemplateParams> = Record<string, OgTemplateParams>,
+> {
   /** Configuration including global settings and lifecycle hooks */
-  private config: OgTemplateRenderer;
+  private config: OgTemplateRenderer<TMap>;
 
   /** Cache manager for fonts and icons */
   private cacheManager: CacheManager<string, Buffer>;
@@ -87,14 +86,14 @@ export class TemplateRenderer {
    * - Guaranteed insertion order
    * - Better memory efficiency than objects
    */
-  private templates: Map<string, OgTemplate> = new Map();
+  private templates = {} as { [K in keyof TMap]: OgTemplate<TMap[K]> };
 
   /**
    * Creates a new TemplateRenderer instance.
    *
    * @param config - Handler configuration with templates and global settings
    */
-  constructor(config: OgTemplateRenderer) {
+  constructor(config: OgTemplateRenderer<TMap>) {
     this.config = config;
 
     // Initialize cache manager if configuration is provided
@@ -111,13 +110,13 @@ export class TemplateRenderer {
    * Templates are indexed by their ID for fast lookup.
    * If a template with the same ID already exists, it will be overwritten.
    *
-   * @param templates - Array of template definitions to register
+   * @param templates - Map of template definitions to register
    */
-  private registerTemplates(templates: OgTemplate[]): void {
-    for (const template of templates) {
-      // Store template in the registry using its ID as the key
-      this.templates.set(template.id, template);
-    }
+  private registerTemplates(templates: { [K in keyof TMap]: OgTemplate<TMap[K]> }): void {
+    const keys = Object.keys(templates) as Array<keyof TMap>;
+    keys.forEach((key) => {
+      this.templates[key] = templates[key];
+    });
   }
 
   /**
@@ -131,22 +130,8 @@ export class TemplateRenderer {
    * @param id - The template ID to look up
    * @returns The template definition, or undefined if not found
    */
-  getTemplate(id: string): OgTemplate | undefined {
-    return this.templates.get(id);
-  }
-
-  /**
-   * Gets all registered template IDs.
-   *
-   * Useful for:
-   * - Building template selection dropdowns
-   * - Listing available templates in documentation
-   * - Debugging template registration
-   *
-   * @returns Array of template IDs
-   */
-  getTemplateIds(): string[] {
-    return Array.from(this.templates.keys());
+  getTemplate<K extends keyof TMap>(id: K): OgTemplate<TMap[K]> | undefined {
+    return this.templates[id];
   }
 
   /**
@@ -177,9 +162,9 @@ export class TemplateRenderer {
    * @returns Promise resolving to a PNG image buffer
    * @throws Error if template is not found or rendering fails
    */
-  async renderToImage(
-    templateId: string,
-    params: OgTemplateParams | (() => Promise<OgTemplateParams>),
+  async renderToImage<K extends keyof TMap>(
+    templateId: K,
+    params: TMap[K],
     options?: { width: number; height: number }
   ): Promise<Buffer> {
     const { sharedParams } = this.config;
@@ -188,17 +173,17 @@ export class TemplateRenderer {
 
     // Step 2: Fail fast if template doesn't exist
     if (!template) {
-      throw new Error(`Template '${templateId}' not found`);
+      throw new Error(`Template '${templateId as string}' not found`);
     }
 
     // Step 3: Merge shared params with user params (user params take precedence)
-    const mergedParams: OgTemplateParams = {
-      ...(typeof sharedParams === 'function' ? await sharedParams() : sharedParams),
-      ...(typeof params === 'function' ? await params() : params),
-    };
+    const mergedParams = {
+      ...sharedParams,
+      ...params,
+    } as TMap[K];
 
     const cacheKey = this.cacheManager.generateKey({
-      templateId,
+      templateId: templateId as string,
       ...mergedParams,
       ...options,
     });
@@ -237,6 +222,8 @@ export class TemplateRenderer {
  * @param config - Handler configuration with templates and settings
  * @returns A new TemplateRenderer instance
  */
-export function createRenderer(config: OgTemplateRenderer): TemplateRenderer {
-  return new TemplateRenderer(config);
+export function createRenderer<
+  TMap extends Record<string, OgTemplateParams> = Record<string, OgTemplateParams>,
+>(config: OgTemplateRenderer<TMap>): TemplateRenderer<TMap> {
+  return new TemplateRenderer<TMap>(config);
 }

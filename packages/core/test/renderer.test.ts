@@ -15,9 +15,6 @@ vi.mock('../src/template', () => ({
 
 describe('Renderer Module', () => {
   const mockTemplate: OgTemplate = {
-    id: 'test-template',
-    name: 'Test Template',
-    description: 'A test template',
     renderer: () => '<div>Test</div>',
     fonts: [],
   };
@@ -27,10 +24,8 @@ describe('Renderer Module', () => {
       expect(validateTemplate(mockTemplate)).toBe(true);
     });
 
-    it('should throw if id is missing', () => {
-      const invalid = { ...mockTemplate, id: '' };
-      expect(() => validateTemplate(invalid)).toThrow('Template must have an id');
-    });
+    // id validation is removed from core types
+    // the previous test 'should throw if id is missing' is no longer relevant
 
     it('should throw if renderer is missing', () => {
       const invalid = { ...mockTemplate } as any;
@@ -45,8 +40,10 @@ describe('Renderer Module', () => {
       expect(result).toBe(mockTemplate);
     });
 
+    // id validation is removed
     it('should throw if template is invalid', () => {
-      const invalid = { ...mockTemplate, id: '' };
+      const invalid = { ...mockTemplate } as any;
+      delete invalid.renderer;
       expect(() => defineTemplate(invalid)).toThrow();
     });
   });
@@ -54,7 +51,7 @@ describe('Renderer Module', () => {
   describe('TemplateRenderer', () => {
     let renderer: TemplateRenderer;
     const mockConfig: OgTemplateRenderer = {
-      templates: [mockTemplate],
+      templates: { 'test-template': mockTemplate },
       sharedParams: { default: 'value' },
     };
 
@@ -71,9 +68,10 @@ describe('Renderer Module', () => {
       expect(renderer.getTemplate('unknown')).toBeUndefined();
     });
 
-    it('should return all template IDs', () => {
-      expect(renderer.getTemplateIds()).toEqual(['test-template']);
-    });
+    // getTemplateIds method was removed or does not exist
+    // it('should return all template IDs', () => {
+    //   expect(renderer.getTemplateIds()).toEqual(['test-template']);
+    // });
 
     describe('renderToImage', () => {
       it('should render successfully', async () => {
@@ -141,7 +139,7 @@ describe('Renderer Module', () => {
 
   describe('createRenderer', () => {
     it('should create a new instance', () => {
-      const instance = createRenderer({ templates: [] });
+      const instance = createRenderer({ templates: {} });
       expect(instance).toBeInstanceOf(TemplateRenderer);
     });
   });

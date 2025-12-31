@@ -170,15 +170,6 @@ export type OgTemplateParams = Record<string, string | number | boolean>;
  * - Metadata for identification
  */
 export type OgTemplate<TParams = OgTemplateParams> = {
-  /** Unique identifier for this template (e.g., 'blog-post', 'product-card') */
-  id: string;
-
-  /** Human-readable name for display purposes */
-  name?: string;
-
-  /** Brief description of what this template is used for */
-  description?: string;
-
   /**
    * Function that generates HTML markup from template parameters.
    *
@@ -210,9 +201,11 @@ export type OgTemplate<TParams = OgTemplateParams> = {
  * The handler manages a registry of templates and provides a unified
  * interface for rendering them to images.
  */
-export type OgTemplateRenderer = {
-  /** Array of template definitions to register */
-  templates: OgTemplate[];
+export type OgTemplateRenderer<
+  TMap extends Record<string, OgTemplateParams> = Record<string, OgTemplateParams>,
+> = {
+  /** Map of template definitions to register, keyed by template ID */
+  templates: { [K in keyof TMap]: OgTemplate<TMap[K]> };
 
   /**
    * Shared parameter values applied to all templates.
@@ -220,7 +213,7 @@ export type OgTemplateRenderer = {
    * These values are merged with user-provided parameters,
    * with user values taking precedence.
    */
-  sharedParams?: OgTemplateParams | (() => Promise<OgTemplateParams>);
+  sharedParams?: Partial<TMap[keyof TMap]>;
 
   /**
    * Cache configuration for fonts and icons.
@@ -243,7 +236,7 @@ export type OgTemplateRenderer = {
    * - Authentication checks
    * - Rate limiting
    */
-  beforeRender?: (templateId: string, params: OgTemplateParams) => void | Promise<void>;
+  beforeRender?: (templateId: keyof TMap, params: TMap[keyof TMap]) => void | Promise<void>;
 
   /**
    * Hook called after rendering.
@@ -255,8 +248,8 @@ export type OgTemplateRenderer = {
    * - Updating metrics
    */
   afterRender?: (
-    templateId: string,
-    params: OgTemplateParams,
+    templateId: keyof TMap,
+    params: TMap[keyof TMap],
     imageBuffer: Buffer
   ) => void | Promise<void>;
 };
