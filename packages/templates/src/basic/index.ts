@@ -1,9 +1,11 @@
-import type { OgTemplate, OgTemplateOptions } from '@ogify/core';
+import { defineTemplate } from '@ogify/core';
 
-export const template1: OgTemplate = {
-  id: 'minimalism-basic',
-  name: 'Minimalism Basic',
-  description: 'A clean, minimalist template',
+export type TemplateParams = {
+  logo: string;
+  variant: 'dark' | 'light';
+};
+
+const template = defineTemplate<TemplateParams>({
   fonts: [
     {
       name: 'Inter',
@@ -16,20 +18,22 @@ export const template1: OgTemplate = {
       style: 'normal',
     },
   ],
-  renderer: (props: OgTemplateOptions) => {
+  renderer: (props) => {
     const { params } = props;
-    const title = params.title || 'Untitled';
-    const description = params.description || '';
+    const logo = params.logo || 'Untitled';
+    const variant = params.variant || 'light';
 
     return `
       <div class="h-full w-full flex flex-col items-center justify-center p-20 bg-white">
         <h1 class="text-6xl font-bold text-gray-900">
-          ${title}
+          ${logo}
         </h1>
         <p class="text-2xl text-gray-600">
-          ${description}
+          ${variant}
         </p>
       </div>
     `;
   },
-};
+});
+
+export default template;
