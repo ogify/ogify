@@ -213,7 +213,7 @@ export type OgTemplateRenderer<
    * These values are merged with user-provided parameters,
    * with user values taking precedence.
    */
-  sharedParams?: Partial<TMap[keyof TMap]>;
+  sharedParams?: Partial<TMap[keyof TMap]> | (() => Promise<Partial<TMap[keyof TMap]>>);
 
   /**
    * Cache configuration for fonts and icons.

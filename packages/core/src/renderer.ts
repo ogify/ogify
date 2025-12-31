@@ -164,7 +164,7 @@ export class TemplateRenderer<
    */
   async renderToImage<K extends keyof TMap>(
     templateId: K,
-    params: TMap[K],
+    params: TMap[K] | (() => Promise<TMap[K]>),
     options?: { width: number; height: number }
   ): Promise<Buffer> {
     const { sharedParams } = this.config;
@@ -178,12 +178,12 @@ export class TemplateRenderer<
 
     // Step 3: Merge shared params with user params (user params take precedence)
     const mergedParams = {
-      ...sharedParams,
-      ...params,
-    } as TMap[K];
+      ...(typeof sharedParams === 'function' ? await sharedParams() : sharedParams || {}),
+      ...(typeof params === 'function' ? await params() : params || {}),
+    };
 
     const cacheKey = this.cacheManager.generateKey({
-      templateId: templateId as string,
+      templateId,
       ...mergedParams,
       ...options,
     });

@@ -10,8 +10,6 @@
  * Inspired by https://github.com/vercel/satori/blob/main/playground/utils/twemoji.ts
  */
 
-/*! Copyright Twitter Inc. and other contributors. Licensed under MIT */
-
 import { OgEmojiProvider } from '../types';
 import { CacheManager } from './cache-manager';
 
