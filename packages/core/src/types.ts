@@ -130,9 +130,12 @@ export type OgFontConfig = {
  *   </div>
  * `;
  */
-export type OgTemplateOptions<TParams = OgTemplateParams> = {
-  /** User-provided parameters that populate the template (e.g., title, description, author) */
-  params: TParams;
+export type OgTemplateOptions = {
+  /** Custom fonts to use in this template */
+  fonts?: OgFontConfig[];
+
+  /** Optional emoji provider to use in this template */
+  emojiProvider?: OgEmojiProvider;
 
   /** Optional custom width in pixels (default: 1200) */
   width?: number;
@@ -147,6 +150,7 @@ export type OgTemplateOptions<TParams = OgTemplateParams> = {
  * Parameters are the data that gets injected into templates to create
  * personalized OG images. Values can be:
  * - Strings: Text content (titles, descriptions, names)
+ * - String Arrays: Lists of tags, categories
  * - Numbers: Counts, dates, metrics
  * - Booleans: Flags, toggles, states
  *
@@ -158,7 +162,7 @@ export type OgTemplateOptions<TParams = OgTemplateParams> = {
  *   published: true
  * };
  */
-export type OgTemplateParams = Record<string, string | number | boolean>;
+export type OgTemplateParams = Record<string, string | string[] | number | boolean>;
 
 /**
  * Complete definition of an Open Graph image template.
@@ -176,7 +180,7 @@ export type OgTemplate<TParams = OgTemplateParams> = {
    * The HTML should use inline styles (Tailwind-like utilities are supported).
    * Flexbox and basic CSS properties are supported by Satori.
    */
-  renderer: (props: OgTemplateOptions<TParams>) => string;
+  renderer: (props: OgTemplateOptions & { params: TParams }) => string;
 
   /**
    * Custom fonts to use in this template.

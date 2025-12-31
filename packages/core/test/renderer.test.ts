@@ -134,6 +134,41 @@ describe('Renderer Module', () => {
           { width: 800, height: 400 }
         );
       });
+
+      it('should accept params as a function returning a promise', async () => {
+        const mockBuffer = Buffer.from('fake-image-promise');
+        vi.mocked(templateModule.renderTemplate).mockResolvedValue(mockBuffer);
+
+        const paramsFn = vi.fn().mockResolvedValue({ title: 'Async Title' });
+        const result = await renderer.renderToImage('test-template', paramsFn);
+
+        expect(result).toBe(mockBuffer);
+        expect(paramsFn).toHaveBeenCalled();
+        expect(templateModule.renderTemplate).toHaveBeenCalledWith(
+          mockTemplate,
+          { default: 'value', title: 'Async Title' },
+          undefined
+        );
+      });
+
+      it('should accept sharedParams as a function returning a promise', async () => {
+        const mockBuffer = Buffer.from('fake-image-shared-async');
+        vi.mocked(templateModule.renderTemplate).mockResolvedValue(mockBuffer);
+
+        const asyncSharedConfig: OgTemplateRenderer = {
+          ...mockConfig,
+          sharedParams: async () => ({ default: 'async-value' }),
+        };
+        const asyncRenderer = new TemplateRenderer(asyncSharedConfig);
+
+        await asyncRenderer.renderToImage('test-template', { title: 'Hello' });
+
+        expect(templateModule.renderTemplate).toHaveBeenCalledWith(
+          mockTemplate,
+          { default: 'async-value', title: 'Hello' },
+          undefined
+        );
+      });
     });
   });
 

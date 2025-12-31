@@ -32,9 +32,6 @@ import { loadFonts } from '../src/utils/font-loader';
 
 describe('renderTemplate', () => {
   const mockTemplate: OgTemplate = {
-    id: 'test',
-    name: 'Test',
-    description: 'Test',
     renderer: (props) => `<div>${props.params.text}</div>`,
     fonts: [{ name: 'Inter' }],
   };
@@ -91,5 +88,62 @@ describe('renderTemplate', () => {
       width: 100,
       height: 100,
     });
+  });
+
+  it('should override template fonts with options fonts', async () => {
+    const customFonts = [{ name: 'CustomFont' }];
+    await renderTemplate(mockTemplate, { text: 'Hello' }, { fonts: customFonts });
+
+    expect(loadFonts).toHaveBeenCalledWith(customFonts);
+  });
+
+  it('should override template emojiProvider with options emojiProvider', async () => {
+    await renderTemplate(mockTemplate, { text: 'Hello' }, { emojiProvider: 'twemoji' });
+
+    // loadAdditionalAsset is called with the emoji provider
+    // We need to trigger it to verify. Since we mock satori, we can't easily trigger the font loading callback
+    // unless we inspect the satori call args or mock satori to call the loadAdditionalAsset.
+    //
+    // However, looking at the code:
+    // const satoriFonts = await loadFonts(fonts);
+    // ...
+    // await satori(..., {
+    //   loadAdditionalAsset: (...) => loadAdditionalAsset({ ..., emojiProvider })
+    // })
+    //
+    // We can't directly check the emojiProvider passed to loadAdditionalAsset without executing the callback passed to satori.
+    // But we can check if the satori options container has the right structure if we could see the closure.
+    //
+    // Actually, checking standard implementation:
+    // Since we mock satori, we verify the options passed to satori.
+    // But loadAdditionalAsset is a function passed to satori.
+    // Steps:
+    // 1. Call renderTemplate
+    // 2. Capture the satori call arguments
+    // 3. Execute the loadAdditionalAsset function passed in satori options
+    // 4. Verify the internal loadAdditionalAsset was called with correct emojiProvider
+
+    expect(satori).toHaveBeenCalled();
+    const satoriCall = vi.mocked(satori).mock.calls[0];
+    const satoriOptions = satoriCall[1] as any;
+
+    expect(satoriOptions.loadAdditionalAsset).toBeDefined();
+
+    // Trigger the callback
+    await satoriOptions.loadAdditionalAsset('emoji', '👋');
+
+    // Currently loadAdditionalAsset logic uses the provider
+    // import { loadAdditionalAsset } from './utils/additional-asset-loader';
+    // It's mocked.
+    // The implementation of renderTemplate calls actual loadAdditionalAsset utility.
+
+    // Let's import the mocked utility to check
+    const { loadAdditionalAsset } = await import('../src/utils/additional-asset-loader');
+    expect(loadAdditionalAsset).toHaveBeenCalledWith(
+      expect.objectContaining({
+        emojiProvider: 'twemoji',
+        segment: '👋',
+      })
+    );
   });
 });

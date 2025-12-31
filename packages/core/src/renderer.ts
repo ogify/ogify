@@ -10,7 +10,13 @@
  * They define how to convert parameters into OG images.
  */
 
-import type { OgTemplate, OgTemplateRenderer, OgTemplateParams, OgCacheConfig } from './types';
+import type {
+  OgTemplate,
+  OgTemplateRenderer,
+  OgTemplateParams,
+  OgCacheConfig,
+  OgTemplateOptions,
+} from './types';
 import { renderTemplate } from './template';
 import { CacheManager } from './utils/cache-manager';
 
@@ -49,7 +55,7 @@ export function validateTemplate<TemplateParams>(config: OgTemplate<TemplatePara
  * - Type safety ensures correct template structure
  * - Clear intent in code (self-documenting)
  *
- * @param config - Complete template configuration including id, name, and renderer function
+ * @param config - Complete template configuration including renderer function and fonts
  * @returns The validated template configuration
  * @throws Error if validation fails
  */
@@ -155,7 +161,7 @@ export class TemplateRenderer<
    * - Throws if rendering fails (font loading, HTML generation, etc.)
    *
    * @param templateId - ID of the template to render
-   * @param params - Parameters to pass to the template
+   * @param params - Parameters (or function returning params) to pass to the template
    * @param options - Optional rendering options
    * @param options.width - Custom image width in pixels (default: 1200)
    * @param options.height - Custom image height in pixels (default: 630)
@@ -165,7 +171,7 @@ export class TemplateRenderer<
   async renderToImage<K extends keyof TMap>(
     templateId: K,
     params: TMap[K] | (() => Promise<TMap[K]>),
-    options?: { width: number; height: number }
+    options?: OgTemplateOptions
   ): Promise<Buffer> {
     const { sharedParams } = this.config;
     // Step 1: Look up the template in the registry

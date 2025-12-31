@@ -14,7 +14,7 @@ import { type SatoriOptions } from 'satori';
 import { html } from 'satori-html';
 import { renderAsync } from '@resvg/resvg-js';
 
-import type { OgTemplate, OgTemplateParams } from './types';
+import type { OgTemplate, OgTemplateOptions, OgTemplateParams } from './types';
 import { loadAdditionalAsset } from './utils/additional-asset-loader';
 import { loadFonts } from './utils/font-loader';
 
@@ -60,15 +60,17 @@ const DEFAULT_HEIGHT = 630;
 export async function renderTemplate<TParams = OgTemplateParams>(
   template: OgTemplate<TParams>,
   params: TParams,
-  options?: { width: number; height: number }
+  options?: OgTemplateOptions
 ): Promise<Buffer> {
   const width = options?.width || DEFAULT_WIDTH;
   const height = options?.height || DEFAULT_HEIGHT;
+  const fonts = options?.fonts?.length ? options.fonts : template.fonts;
+  const emojiProvider = options?.emojiProvider || template.emojiProvider || 'noto';
 
   // Step 1: Load all fonts specified in the template
   // Fonts are loaded in parallel for optimal performance
   // The font loader handles three sources: data, URL, and Google Fonts
-  const satoriFonts: SatoriOptions['fonts'] = await loadFonts(template.fonts);
+  const satoriFonts: SatoriOptions['fonts'] = await loadFonts(fonts);
 
   // Step 2: Generate HTML string from the template function
   // The template receives the user parameters and width/height for responsive layouts
@@ -103,8 +105,8 @@ export async function renderTemplate<TParams = OgTemplateParams>(
       return loadAdditionalAsset({
         code, // Asset type ('emoji' or other)
         segment, // The character(s) to load
-        fonts: template.fonts, // Available fonts for fallback detection
-        emojiProvider: template.emojiProvider || 'noto', // Emoji provider (default: noto)
+        fonts, // Available fonts for fallback detection
+        emojiProvider, // Emoji provider (default: noto)
       });
     },
   });
