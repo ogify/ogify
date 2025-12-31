@@ -18,82 +18,64 @@ Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just c
 ## 📦 Installation
 
 ```bash
-pnpm add @ogify/core
+pnpm add @ogify/core @ogify/templates
 ```
 
 or
 
 ```bash
-npm install @ogify/core
+npm install @ogify/core @ogify/templates
 ```
 
 or
 
 ```bash
-yarn add @ogify/core
+yarn add @ogify/core @ogify/templates
 ```
 
 ## 🚀 Quick Start
 
-### 1. Define a Template
+### 1. Choose a Template
 
-Create a template using `defineTemplate` or copy/paste one of the [production-ready templates](https://ogify.dev/templates) provided by OGify.
+OGify comes with a collection of beautiful, production-ready templates.
 
 ```typescript
-import { defineTemplate, OgTemplateOptions } from '@ogify/core';
-
-const blogTemplate = defineTemplate({
-  fonts: [
-    { name: 'Inter', weight: 400 },
-    { name: 'Inter', weight: 700 }
-  ],
-  /**
-   * sharedParams?: OgTemplateParams | (() => Promise<OgTemplateParams>);
-   */
-  renderer: ({ params }: OgTemplateOptions) => {
-    return `
-      <div style="display: flex; flex-direction: column; width: 100%; height: 100%; background: white; padding: 40px;">
-        <h1 style="font-size: 60px; font-weight: 700; color: #000;">
-          ${params.title}
-        </h1>
-        <p style="font-size: 30px; color: #666;">
-          ${params.description}
-        </p>
-      </div>
-    `;
-  },
-});
+import basicTemplate from '@ogify/templates/basic';
+import type { TemplateParams } from '@ogify/templates/basic';
 ```
 
 ### 2. Create a Renderer
 
-Create a renderer instance and register your templates:
+Create a renderer instance and register your template:
 
 ```typescript
 import { createRenderer } from '@ogify/core';
+import basicTemplate from '@ogify/templates/basic';
+import type { TemplateParams } from '@ogify/templates/basic';
 
-const renderer = createRenderer({
-  templates: { 'blog-post': blogTemplate },
+const renderer = createRenderer<{ basic: TemplateParams }>({
+  templates: { basic: basicTemplate },
   sharedParams: {
-    brand: 'My Company'
+    brandLogo: 'https://ogify.dev/logo.png',
   }
 });
 ```
 
 ### 3. Generate an Image
 
-Render a template to a PNG buffer:
+Render the template to a PNG buffer:
 
 ```typescript
 // Basic usage (1200x630)
-const imageBuffer = await renderer.renderToImage('blog-post', {
+const imageBuffer = await renderer.renderToImage('basic', {
   title: 'Hello World',
-  description: 'My first OG image'
+  subtitle: 'My first OG image',
 });
 
 // Custom dimensions for Twitter (1200x675)
-const twitterImage = await renderer.renderToImage('blog-post', {
-  title: 'Hello World'
+const twitterImage = await renderer.renderToImage('basic', {
+  title: 'Hello World',
+  subtitle: 'My first OG image',
 }, {
   width: 1200,
   height: 675
@@ -140,13 +122,13 @@ const template = defineTemplate({
 
 ```typescript
 // First render: Downloads fonts from Google (~500ms)
-await renderer.renderToImage('blog-post', { title: 'Post 1' });
+await renderer.renderToImage('basic', { title: 'Post 1', subtitle: '...' });
 
 // Second render: Uses cached fonts (~50ms) - 10x faster! ⚡
-await renderer.renderToImage('blog-post', { title: 'Post 2' });
+await renderer.renderToImage('basic', { title: 'Post 2', subtitle: '...' });
 
 // All subsequent renders: Lightning fast
-await renderer.renderToImage('blog-post', { title: 'Post 3' });
+await renderer.renderToImage('basic', { title: 'Post 3', subtitle: '...' });
 ```
 
 **Performance**: 10x faster after first render, no configuration needed
@@ -164,6 +146,33 @@ renderer: ({ params }) => `
 ```
 
 **Time saved**: No emoji sprite sheets, no asset management, no build step
+
+## 🛠️ Creating Custom Templates
+
+If you want to build your own templates from scratch, you can use `defineTemplate`.
+
+```typescript
+import { defineTemplate, OgTemplateOptions } from '@ogify/core';
+
+const blogTemplate = defineTemplate({
+  fonts: [
+    { name: 'Inter', weight: 400 },
+    { name: 'Inter', weight: 700 }
+  ],
+  renderer: ({ params }: OgTemplateOptions) => {
+    return `
+      <div style="display: flex; flex-direction: column; width: 100%; height: 100%; background: white; padding: 40px;">
+        <h1 style="font-size: 60px; font-weight: 700; color: #000;">
+          ${params.title}
+        </h1>
+        <p style="font-size: 30px; color: #666;">
+          ${params.description}
+        </p>
+      </div>
+    `;
+  },
+});
+```
 
 ## 📚 Advanced Usage
 
@@ -255,10 +264,16 @@ Generate images for different platforms:
 
 ```typescript
 // Facebook/LinkedIn (1200x630)
-const facebookImage = await renderer.renderToImage('blog-post', params);
+const facebookImage = await renderer.renderToImage('basic', {
+  title: 'Hello World',
+  subtitle: 'My first OG image',
+});
 
 // Twitter (1200x675)
-const twitterImage = await renderer.renderToImage('blog-post', params, {
+const twitterImage = await renderer.renderToImage('basic', {
+  title: 'Hello World',
+  subtitle: 'My first OG image',
+}, {
   width: 1200,
   height: 675
 });
@@ -326,7 +341,7 @@ Renders a template to a PNG buffer.
 **Parameters:**
 
 - `templateId` (string): ID of the template to render
-- `params` (object): Parameters to pass to the template
+- `params` (object | function): Parameters (or function returning params) to pass to the template
 - `options` (optional): Rendering options
   - `width` (number): Image width (default: 1200)
   - `height` (number): Image height (default: 630)
@@ -349,13 +364,13 @@ OGify automatically caches fonts, emojis, and generated images in memory - no co
 
 ```typescript
 // First render: Downloads fonts from Google Fonts (~500ms)
-await renderer.renderToImage('blog-post', { title: 'Post 1' });
+await renderer.renderToImage('basic', { title: 'Post 1', subtitle: '...' });
 
 // Second render: Uses cached fonts (~50ms) - 10x faster! ⚡
-await renderer.renderToImage('blog-post', { title: 'Post 2' });
+await renderer.renderToImage('basic', { title: 'Post 2', subtitle: '...' });
 
 // Third+ renders: Lightning fast from cache
-await renderer.renderToImage('blog-post', { title: 'Post 3' });
+await renderer.renderToImage('basic', { title: 'Post 3', subtitle: '...' });
 ```
 
 ## 📋 Changelog
