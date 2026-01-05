@@ -15,9 +15,11 @@ export * from './renderer';
 // Image rendering: renderTemplate function for converting templates to PNG
 export * from './template';
 
-// Utility functions: deepMerge, mergeParams, mergeFonts, generateCacheKey, etc.
-export * from './utils/font-fetcher';
+// Utility functions: clsx.
+export * from './utils/clsx';
+
+// Utility functions: objectToStyle.
+export * from './utils/object-to-style';
 
 // Type definitions: OgTemplate, OgTemplateParams, OgFontConfig, OgTemplateRenderer, etc.
 export * from './types';
-export * from './utils/object-to-style';

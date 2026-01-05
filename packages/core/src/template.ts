@@ -76,8 +76,7 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   // The template receives the user parameters and width/height for responsive layouts
   const htmlString = await template.renderer({
     params: typeof params === 'function' ? await params() : params,
-    width,
-    height,
+    ...options,
   });
 
   // Step 3: Convert HTML string to React-like element tree
