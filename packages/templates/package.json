@@ -6,11 +6,6 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
-    "./minimalism": {
-      "types": "./dist/minimalism/index.d.ts",
-      "import": "./dist/minimalism/index.mjs",
-      "require": "./dist/minimalism/index.js"
-    },
     "./basic": {
       "types": "./dist/basic/index.d.ts",
       "import": "./dist/basic/index.mjs",

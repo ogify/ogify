@@ -3,15 +3,15 @@
   "homepage": "https://ogify.dev",
   "items": [
     {
-      "name": "Minimalism",
-      "description": "A clean, minimal template for Open Graph images",
-      "preview": "https://ogify.dev/templates/minimal.png",
-      "filePath": "packages/templates/minimalism/index.ts",
-      "packageName": "@ogify/templates/minimalism",
+      "name": "Basic",
+      "description": "Free template for Open Graph images",
+      "preview": "https://ogify.dev/templates/basic.png",
+      "filePath": "packages/templates/basic/index.ts",
+      "packageName": "@ogify/templates/basic",
       "variants": [
         {
           "name": "Default",
-          "preview": "https://ogify.dev/templates/minimal.png"
+          "preview": "https://ogify.dev/templates/basic.png"
         }
       ]
     }
