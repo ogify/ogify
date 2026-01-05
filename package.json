@@ -18,11 +18,10 @@
     "clean": "turbo run clean",
     "format": "prettier --write .",
     "examples": "turbo run dev --filter=@ogify/examples",
-    "release": "pnpm -r run release && release-it"
+    "release": "turbo run release --filter=@ogify/core && turbo run release --filter=@ogify/templates"
   },
   "devDependencies": {
     "@changesets/cli": "2.29.8",
-    "@release-it/conventional-changelog": "^10.0.4",
     "@types/node": "^20",
     "@typescript-eslint/eslint-plugin": "8.48.1",
     "@typescript-eslint/parser": "8.48.1",
