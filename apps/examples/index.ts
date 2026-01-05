@@ -13,20 +13,51 @@ const handler = createRenderer<{ basic: TemplateParams }>({
   sharedParams: {},
 });
 
+const variants = [
+  {
+    layout: 'aligned',
+    isRTL: false,
+  },
+  {
+    layout: 'centered',
+    isRTL: false,
+  },
+  {
+    layout: 'splitted',
+    isRTL: false,
+  },
+  {
+    layout: 'aligned',
+    isRTL: true,
+  },
+  {
+    layout: 'centered',
+    isRTL: true,
+  },
+  {
+    layout: 'splitted',
+    isRTL: true,
+  },
+];
+
 async function main() {
-  try {
+  for (const variant of variants) {
     try {
+      const start = Date.now();
+      console.log(`Generating ${variant.layout} ${variant.isRTL ? 'rtl' : 'ltr'} image...`);
       const imageBuffer = await handler.renderToImage(
         'basic',
         {
           title: 'Generate beautiful OG images in minutes',
-          subtitle:
-            'Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just copy & paste the production-ready templates.',
+          subtitle: 'Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just copy & paste the production-ready templates.',
           brandLogo: 'https://ogify.dev/logo.svg',
-          brandName: 'Revolabs Team',
-          extras: ['ogify.dev'],
+          brandName: 'Ogify',
+          extras: ['#zero-config', '#production-ready'],
+          cta: 'Get Started',
+          layout: variant.layout as TemplateParams['layout'],
         },
         {
+          isRTL: variant.isRTL,
           fonts: [
             {
               name: 'JetBrains Mono',
@@ -41,23 +72,20 @@ async function main() {
           ],
         }
       );
-      await writeFile('output.png', imageBuffer);
+      await writeFile(
+        `outputs/aligned-${variant.layout}-${variant.isRTL ? 'rtl' : 'ltr'}.png`,
+        imageBuffer
+      );
+      const end = Date.now();
+      console.log(
+        `Generated ${variant.layout} ${variant.isRTL ? 'rtl' : 'ltr'} image successfully... ${end - start}ms`
+      );
     } catch (error) {
-      console.error('Error rendering image:', error);
+      console.error(`❌ Example failed: ${variant.layout} ${variant.isRTL ? 'rtl' : 'ltr'}`, error);
     }
-  } catch (error) {
-    console.error('❌ Example failed:', error);
   }
 }
 
 (async () => {
-  console.log('Example started...');
-  const start = Date.now();
   await main();
-  const end = Date.now();
-  console.log(`Example 1 finished in ${end - start}ms`);
-
-  await main();
-  const finish = Date.now();
-  console.log(`Example 2 finished in ${finish - end}ms`);
 })();
