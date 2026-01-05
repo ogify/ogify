@@ -37,7 +37,7 @@ yarn add @ogify/core @ogify/templates
 
 ### 1. Choose a Template
 
-OGify comes with a collection of beautiful, production-ready templates.
+OGify comes with a collection of beautiful, production-ready templates. Check out [our gallery](https://ogify.dev/templates) for more.
 
 ```typescript
 import template from '@ogify/templates/basic';
@@ -99,6 +99,12 @@ const rtlImage = await renderer.renderToImage('basic', {
 **That's it!** You're ready for production. No font files to download, no build configuration, no asset pipeline.
 
 ## 🚀 Time-Saving Features
+
+### **Rich Templates**
+
+Access a growing library of beautiful, production-ready templates. [Browse Templates](https://ogify.dev/templates)
+
+**Time saved**: Hours of design and implementation time
 
 ### **Zero-Config Google Fonts**
 
@@ -379,8 +385,6 @@ const image = await renderer.renderToImage('basic', {
 ### `renderer.getTemplate(id)`
 
 Retrieves a template by ID.
-
-**Returns:** `OgTemplate | undefined`
 
 **Returns:** `OgTemplate | undefined`
 
