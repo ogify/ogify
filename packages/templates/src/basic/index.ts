@@ -2,7 +2,7 @@ import { defineTemplate, objectToStyle } from '@ogify/core';
 
 export type TemplateParams = {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   brandName?: string;
   brandLogo?: string;
   extras?: string[];
@@ -34,7 +34,7 @@ const template = defineTemplate<TemplateParams>({
       subtitle,
       brandName = '',
       brandLogo = '',
-      layout = 'aligned',
+      layout = 'splitted',
       primaryColor = '#4c8f5f',
       secondaryColor = '#faf8f5',
       textColor = '#fff',
@@ -51,38 +51,75 @@ const template = defineTemplate<TemplateParams>({
       color: textColor,
     };
 
+    let content = '';
+
+    const titleContent = `<div class="text-[56px] font-bold leading-[1.4] flex flex-wrap w-full" style="${objectToStyle(
+      {
+        'text-wrap': 'pretty',
+      }
+    )}">${title}</div>`;
+
+    const subtitleContent = subtitle
+      ? `<p class="text-[28px] opacity-80 leading-[1.5] mt-6 flex flex-wrap w-full"  style="${objectToStyle(
+          {
+            'text-wrap': 'pretty',
+          }
+        )}">${subtitle}</p>`
+      : '';
+
     if (layout === 'aligned') {
-      return `<div class="flex flex-col items-start justify-center h-full w-full px-24" style="${objectToStyle(backgroundStyles, { isRTL })}">
-          <div class="absolute flex inset-0 opacity-30" style="background-image: url(${pattern})"></div>
+      content = `<div class="flex flex-col items-start justify-center h-full w-full px-24">
+        ${brandLogo ? `<img class="mb-6 h-18" src="${brandLogo}" alt="${brandName}" />` : ''}
 
-          ${brandLogo ? `<img class="mb-6 h-18" src="${brandLogo}" alt="${brandName}" />` : ''}
+        ${titleContent}
 
-          <h1 class="mb-6 text-[56px] font-bold">${title}</h1>
+        ${subtitleContent}
 
-          <p class="mb-6 text-[32px] opacity-80">${subtitle}</p>
+        <div class="mt-6 flex items-center">
+          ${
+            brandName
+              ? `<div class="flex items-center rounded-full border border-white/40 bg-white/20 px-4 py-2 text-[24px] leading-none mr-6">
+            <span class="h-2 w-2 rounded-full bg-white mr-2"></span>
+            <span>${brandName}</span>
+          </div>`
+              : ''
+          }
+          <p class="text-[24px] opacity-60">${extras.filter(Boolean).join(' — ')}</p>
+        </div>
+      </div>`;
+    } else if (layout === 'centered') {
+      //
+      content = `<div>
+        
+      </div>`;
+    } else if (layout === 'splitted') {
+      content = `<div class="flex h-full w-full">
+        <div class="flex flex-col justify-center items-center w-1/3 p-16 border-r border-white/10">
+          ${brandLogo ? `<img class="mb-6 h-24" src="${brandLogo}" alt="${brandName}" />` : ''}
 
-          <div class="mt-6 flex items-center">
-            <div class="flex items-center rounded-full border border-white/40 bg-white/20 px-4 py-2 text-[24px] leading-none">
+          <p class="text-[24px] opacity-60">${extras.filter(Boolean).join(' — ')}</p>
+        </div>
+        <div class="flex flex-col justify-center w-2/3 p-16 items-start">
+          ${
+            brandName
+              ? `<div class="flex items-center rounded-full border border-white/40 bg-white/20 px-4 py-2 text-[24px] leading-none mb-4">
               <span class="h-2 w-2 rounded-full bg-white mr-2"></span>
               <span>${brandName}</span>
-            </div>
-            <p class="ml-6 text-[24px] opacity-60">${extras.filter(Boolean).join(' — ')}</p>
-          </div>
-          
-        </div>`;
+            </div>`
+              : ''
+          }
+
+          ${titleContent}
+
+          ${subtitleContent}
+        </div>
+      </div>`;
     }
 
-    if (layout === 'centered') {
-      // LEFT_ALIGNED
-      return `<div></div>`;
-    }
-
-    if (layout === 'splitted') {
-      // SPLIT
-      return `<div></div>`;
-    }
-
-    return `<div></div>`;
+    return `<div class="flex h-full w-full" style="${objectToStyle(backgroundStyles, { isRTL })}">
+              <div class="absolute flex inset-0 opacity-30" style="background-image: url(${pattern})"></div>
+              ${content}
+            </div>`;
   },
 });
 
