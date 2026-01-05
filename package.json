@@ -19,7 +19,8 @@
     "format": "prettier --write .",
     "examples": "turbo run dev --filter=@ogify/examples",
     "release:core": "cd packages/core && pnpm run release",
-    "release:templates": "cd packages/templates && pnpm run release"
+    "release:templates": "cd packages/templates && pnpm run release",
+    "release": "pnpm run release:core && pnpm run release:templates"
   },
   "devDependencies": {
     "@changesets/cli": "2.29.8",
