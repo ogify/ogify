@@ -51,9 +51,9 @@ async function main() {
           title: 'Generate beautiful OG images in minutes',
           subtitle: 'Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just copy & paste the production-ready templates.',
           brandLogo: 'https://ogify.dev/logo.svg',
-          brandName: 'Ogify',
+          brandName: '@ogify',
           extras: ['#zero-config', '#production-ready'],
-          cta: 'Get Started',
+          cta: 'Get started',
           layout: variant.layout as TemplateParams['layout'],
         },
         {
