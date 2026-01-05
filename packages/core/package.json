@@ -1,6 +1,6 @@
 {
   "name": "@ogify/core",
-  "version": "0.1.5",
+  "version": "0.4.0",
   "description": "Core types and utilities for OGify Open Graph image generator",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -23,7 +23,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "release": "release-it"
   },
   "author": {
     "name": "Hung Pham - @revolabs-io",

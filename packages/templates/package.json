@@ -1,6 +1,6 @@
 {
   "name": "@ogify/templates",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Pre-designed templates for OGify",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -23,7 +23,8 @@
     "test": "echo 'No tests available'",
     "test:watch": "echo 'No tests available'",
     "test:ui": "echo 'No tests available'",
-    "test:coverage": "echo 'No tests available'"
+    "test:coverage": "echo 'No tests available'",
+    "release": "release-it"
   },
   "author": {
     "name": "Hung Pham - @revolabs-io",

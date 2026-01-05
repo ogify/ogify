@@ -1,5 +1,6 @@
 {
   "name": "ogify",
+  "version": "0.2.0",
   "private": true,
   "packageManager": "pnpm@10.24.0",
   "engines": {
@@ -17,17 +18,17 @@
     "clean": "turbo run clean",
     "format": "prettier --write .",
     "examples": "turbo run dev --filter=@ogify/examples",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "turbo run build && changeset publish"
+    "release": "pnpm -r run release && release-it"
   },
   "devDependencies": {
     "@changesets/cli": "2.29.8",
+    "@release-it/conventional-changelog": "^10.0.4",
     "@types/node": "^20",
     "@typescript-eslint/eslint-plugin": "8.48.1",
     "@typescript-eslint/parser": "8.48.1",
     "eslint": "9.39.1",
     "prettier": "3.7.4",
+    "release-it": "^19.2.2",
     "turbo": "^2.6.3",
     "typescript": "5.9.3"
   }
