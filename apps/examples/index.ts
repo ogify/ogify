@@ -23,7 +23,7 @@ const variants = [
     isRTL: false,
   },
   {
-    layout: 'splitted',
+    layout: 'split',
     isRTL: false,
   },
   {
@@ -35,7 +35,7 @@ const variants = [
     isRTL: true,
   },
   {
-    layout: 'splitted',
+    layout: 'split',
     isRTL: true,
   },
 ];

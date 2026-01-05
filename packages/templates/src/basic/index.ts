@@ -8,7 +8,7 @@ export type TemplateParams = {
   cta?: string;
   extras?: string[];
 
-  layout?: 'aligned' | 'centered' | 'splitted';
+  layout?: 'aligned' | 'centered' | 'split';
   primaryColor?: string;
   secondaryColor?: string;
   textColor?: string;
@@ -35,7 +35,7 @@ const template = defineTemplate<TemplateParams>({
       subtitle,
       brandName = '',
       brandLogo = '',
-      layout = 'splitted',
+      layout = 'split',
       primaryColor = '#4c8f5f',
       secondaryColor = '#faf8f5',
       textColor = '#fff',
@@ -91,7 +91,7 @@ const template = defineTemplate<TemplateParams>({
           <div class="${clsx('flex text-[20px] opacity-60', isRTL ? 'flex-row-reverse' : 'flex-row')}">${extras.filter(Boolean).map((extra) => `<span>${extra}</span>`).join('<span class="mx-2">•</span>')}</div>
         </div>
       </div>`;
-    } else if (layout === 'splitted') {
+    } else if (layout === 'split') {
       content = `<div class="${clsx('flex h-full w-full', isRTL ? 'flex-row-reverse' : 'flex-row')}">
         <div class="flex flex-col justify-center items-center text-center w-1/3 p-16 ${isRTL ? 'border-l' : 'border-r'} border-white/10">
           ${brandLogo ? `<img class="mb-6 h-24" src="${brandLogo}" alt="${brandName}" />` : ''}

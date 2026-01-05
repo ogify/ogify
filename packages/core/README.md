@@ -13,7 +13,7 @@ Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just c
 - 🎨 **Flexible Customization**: Intuitive API & Tailwind-like syntax helps building eye-catching templates faster.
 - 🖼️ **Production-ready templates**: OGify provides a set of production-ready templates with zero configuration.
 - ⚡ **Smart caching**: Automatically caches fonts, emojis, and generated images - no configuration required.
-- 🛡️ **Type-safe**: Full TypeScript support catches errors before runtime.
+- 🌍 **RTL Support**: Built-in support for Right-to-Left languages like Arabic, Hebrew, and Persian.
 
 ## 📦 Installation
 
@@ -40,7 +40,7 @@ yarn add @ogify/core @ogify/templates
 OGify comes with a collection of beautiful, production-ready templates.
 
 ```typescript
-import basicTemplate from '@ogify/templates/basic';
+import template from '@ogify/templates/basic';
 import type { TemplateParams } from '@ogify/templates/basic';
 ```
 
@@ -50,13 +50,14 @@ Create a renderer instance and register your template:
 
 ```typescript
 import { createRenderer } from '@ogify/core';
-import basicTemplate from '@ogify/templates/basic';
+import template from '@ogify/templates/basic';
 import type { TemplateParams } from '@ogify/templates/basic';
 
 const renderer = createRenderer<{ basic: TemplateParams }>({
-  templates: { basic: basicTemplate },
+  templates: { basic: template },
   sharedParams: {
-    brandLogo: 'https://ogify.dev/logo.png',
+    brandLogo: 'https://ogify.dev/logo.svg',
+    brandName: 'OGify',
   }
 });
 ```
@@ -70,15 +71,28 @@ Render the template to a PNG buffer:
 const imageBuffer = await renderer.renderToImage('basic', {
   title: 'Hello World',
   subtitle: 'My first OG image',
+  layout: 'centered', // aligned | centered | split
+  cta: 'Read More',
+  primaryColor: '#000000',
 });
 
 // Custom dimensions for Twitter (1200x675)
 const twitterImage = await renderer.renderToImage('basic', {
   title: 'Hello World',
   subtitle: 'My first OG image',
+  layout: 'split',
 }, {
   width: 1200,
   height: 675
+});
+
+// RTL Support (Arabic/Hebrew/Persian)
+const rtlImage = await renderer.renderToImage('basic', {
+  title: 'مرحبا بالعالم',
+  subtitle: 'هذه أول صورة OG لي',
+  layout: 'aligned',
+}, {
+  isRTL: true
 });
 ```
 
@@ -345,8 +359,22 @@ Renders a template to a PNG buffer.
 - `options` (optional): Rendering options
   - `width` (number): Image width (default: 1200)
   - `height` (number): Image height (default: 630)
+  - `isRTL` (boolean): Enable Right-to-Left text direction (default: false)
 
 **Returns:** `Promise<Buffer>`
+
+### RTL Support
+
+OGify supports Right-to-Left (RTL) languages via the `isRTL` option.
+
+```typescript
+const image = await renderer.renderToImage('basic', {
+  title: 'مرحبا بالعالم', // Arabic: Hello World
+  subtitle: 'هذه أول صورة OG لي',
+}, {
+  isRTL: true
+});
+```
 
 ### `renderer.getTemplate(id)`
 
