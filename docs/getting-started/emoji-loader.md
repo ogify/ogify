@@ -4,13 +4,19 @@ OGify supports rendering emojis in your images by downloading vector or image as
 
 ## Configuration
 
-You can specify the `emojiProvider` when defining a template or via global library configuration (if available). Currently, it is set per template.
+You can specify the `emojiProvider` when defining a template. It is set per template during template definition.
 
 ```typescript
+import { defineTemplate } from '@ogify/core';
+
 const template = defineTemplate({
-  // ...
+  fonts: [
+    { name: 'Inter', weight: 400 },
+  ],
   emojiProvider: 'twemoji', // Default
-  renderer: ...
+  renderer: ({ params }) => {
+    return `<div>${params.title}</div>`;
+  },
 });
 ```
 

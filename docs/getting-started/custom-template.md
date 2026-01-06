@@ -21,7 +21,7 @@ const myTemplate = defineTemplate<MyTemplateParams>({
     { name: 'Inter', weight: 700 }
   ],
   
-  // 2. Define Implementation
+  // 2. Define Renderer Function
   renderer: ({ params, isRTL }) => {
     // Return HTML string
     return `

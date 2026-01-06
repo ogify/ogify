@@ -1,16 +1,16 @@
 # Next.js App Router Integration
 
-Next.js App Router provides two distinct ways to generate Open Graph images: using File Conventions (`opengraph-image.tsx`) or using Route Handlers.
+Next.js App Router provides two distinct ways to generate Open Graph images: using File Conventions (`opengraph-image.ts`) or using Route Handlers.
 
 > Ensure you have [installed the packages](../getting-started/installation.md) before proceeding.
 
 ## Option 1: File Conventions (Recommended)
 
-Next.js has built-in support for generating images using `opengraph-image.tsx`. This maps directly to OGify's renderer.
+Next.js has built-in support for generating images using `opengraph-image.ts`. This maps directly to OGify's renderer.
 
-### 1. Create `opengraph-image.tsx`
+### 1. Create `opengraph-image.ts`
 
-Place this file in any route segment (e.g., `app/opengraph-image.tsx` or `app/posts/[slug]/opengraph-image.tsx`).
+Place this file in any route segment (e.g., `app/opengraph-image.ts` or `app/posts/[slug]/opengraph-image.ts`).
 
 ```typescript
 import { ImageResponse } from 'next/og';
@@ -23,9 +23,6 @@ const renderer = createRenderer<{ basic: TemplateParams }>({
   templates: { basic: template },
 });
 
-export const runtime = 'edge';
-
-export const alt = 'About Acme';
 export const size = {
   width: 1200,
   height: 630,
@@ -37,7 +34,7 @@ export default async function Image() {
   // Generate the image buffer
   const buffer = await renderer.renderToImage('basic', {
     title: 'My Page Title',
-    subtitle: 'Generated via opengraph-image.tsx',
+    subtitle: 'Generated via opengraph-image.ts',
     layout: 'centered',
   });
 
@@ -64,7 +61,6 @@ Create `app/api/og/route.ts`:
 import { createRenderer } from '@ogify/core';
 import template from '@ogify/templates/basic';
 import type { TemplateParams } from '@ogify/templates/basic';
-import { NextResponse } from 'next/server';
 
 const renderer = createRenderer<{ basic: TemplateParams }>({
   templates: { basic: template },
@@ -79,11 +75,9 @@ export async function GET(request: Request) {
     layout: 'centered',
   });
 
-  return new NextResponse(imageBuffer, {
+  return new Response(imageBuffer, {
     headers: {
       'Content-Type': 'image/png',
-      // Cache for 1 hour (See [Caching](../getting-started/cache.md) for specifics)
-      'Cache-Control': 'public, max-age=3600, immutable',
     },
   });
 }

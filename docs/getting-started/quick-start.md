@@ -13,7 +13,7 @@ import type { TemplateParams } from '@ogify/templates/basic';
 
 ## 2. Create a Renderer
 
-The renderer is responsible for orchestrating the generation process. passing the template to the renderer.
+The renderer is responsible for orchestrating the generation process. Create it by passing your templates to `createRenderer`.
 
 ```typescript
 import { createRenderer } from '@ogify/core';
@@ -57,9 +57,7 @@ await writeFile('output.png', imageBuffer);
 ### Returning as a Response
 
 ```typescript
-import { NextResponse } from 'next/server';
-
-return new NextResponse(imageBuffer, {
+return new Response(imageBuffer, {
   headers: {
     'Content-Type': 'image/png',
   },

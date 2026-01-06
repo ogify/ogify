@@ -29,8 +29,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   });
 
   res.setHeader('Content-Type', 'image/png');
-  // See [Caching](../getting-started/cache.md) for strategy configuration
-  res.setHeader('Cache-Control', 'public, max-age=3600, immutable');
   res.send(imageBuffer);
 }
 ```
