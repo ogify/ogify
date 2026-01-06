@@ -55,9 +55,9 @@ const template = defineTemplate<TemplateParams>({
 
     let content = '';
 
-    const titleContent = `<div class="${clsx(subtitle ? 'text-[56px]' : 'text-[64px]', 'w-full font-bold leading-[1.25] flex flex-wrap', isRTL ? 'justify-end' : 'justify-start')}" style="${objectToStyle({ 'text-wrap': 'pretty' })}">${title}</div>`;
+    const titleContent = `<div class="${clsx(subtitle ? 'text-[56px]' : 'text-[64px]', 'w-full font-bold leading-[1.25] flex flex-wrap', layout === 'centered' ? 'justify-center' : isRTL ? 'justify-end' : 'justify-start')}" style="${objectToStyle({ 'text-wrap': 'pretty' })}">${title}</div>`;
 
-    const subtitleContent = subtitle ? `<p class="${clsx('w-full text-[28px] opacity-80 leading-[1.5] mt-6 flex flex-wrap', isRTL ? 'justify-end' : 'justify-start')}"  style="${objectToStyle({ 'text-wrap': 'pretty' })}">${subtitle}</p>` : '';
+    const subtitleContent = subtitle ? `<p class="${clsx('w-full text-[28px] opacity-80 leading-[1.5] mt-6 flex flex-wrap', layout === 'centered' ? 'justify-center' : isRTL ? 'justify-end' : 'justify-start')}"  style="${objectToStyle({ 'text-wrap': 'pretty' })}">${subtitle}</p>` : '';
 
     const ctaContent = cta
       ? `<div class="text-[24px] py-4 px-8 mt-6 rounded-full bg-white/20 border border-white/30 flex items-center justify-center">

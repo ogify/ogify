@@ -32,6 +32,8 @@ const imageBuffer = await renderer.renderToImage('basic', {
 });
 ```
 
+![Basic Usage](./images/basic/basic-usage.png)
+
 ## Parameters
 
 | Parameter | Type | Required | Default | Description |
@@ -62,10 +64,11 @@ const imageBuffer = await renderer.renderToImage('basic', {
   brandLogo: 'https://example.com/logo.png',
   brandName: 'My App',
   extras: ['January 2026', 'Product Update'],
+  cta: 'Checkout!',
 });
 ```
 
-![Centered layout example](./images/basic/centered-ltr.png)
+![Centered layout example](./images/basic/centered.png)
 
 **Visual Description**: All content is centered vertically and horizontally. Logo appears at the top, followed by title, subtitle, CTA, and metadata at the bottom.
 
@@ -103,10 +106,11 @@ const imageBuffer = await renderer.renderToImage('basic', {
   extras: ['Open Source', 'TypeScript'],
   primaryColor: '#6366f1',
   secondaryColor: '#f0abfc',
+  cta: 'Checkout!',
 });
 ```
 
-![Split layout example](./images/basic/split-ltr.png)
+![Split layout example](./images/basic/split.png)
 
 **Visual Description**: Two-column layout. Left side (1/3 width) shows logo, brand name, and metadata. Right side (2/3 width) displays title, subtitle, and CTA.
 
@@ -136,20 +140,24 @@ const imageBuffer = await renderer.renderToImage('basic', {
   subtitle: 'دليل شامل لتطوير الويب الحديث',
   layout: 'aligned',
   brandName: 'مدونة تقنية',
+  cta: 'قراءة المقال',
+  extras: ['5 دقائق للقراءة', 'تطوير الويب الحديث'],
 }, {
   isRTL: true,
+  fonts: [{
+    name: 'Beiruti',
+    weight: 400,
+  },
+  {
+    name: 'Beiruti',
+    weight: 700,
+  }]
 });
 ```
 
 When `isRTL: true` is set, the layout automatically mirrors, text aligns to the right, and directional elements (like arrows in CTAs) flip appropriately.
 
-### RTL Layout Examples
-
-![Centered layout (RTL)](./images/basic/centered-rtl.png)
-<!-- slide -->
-![Aligned layout (RTL)](./images/basic/aligned-rtl.png)
-<!-- slide -->
-![Split layout (RTL)](./images/basic/split-rtl.png)
+![RTL Example](./images/basic/rtl.png)
 
 ## Advanced Examples
 
