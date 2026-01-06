@@ -25,7 +25,6 @@ Learn about OGify's key features:
 Detailed API documentation:
 
 - **[Core API](./api-reference/core.md)** - `createRenderer`, `defineTemplate`, and more
-- **[Templates API](./api-reference/templates.md)** - Built-in template parameters and options
 
 ## 🎨 Templates
 

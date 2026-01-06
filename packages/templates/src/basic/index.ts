@@ -35,7 +35,7 @@ const template = defineTemplate<TemplateParams>({
       subtitle,
       brandName = '',
       brandLogo = '',
-      layout = 'split',
+      layout = 'aligned',
       primaryColor = '#4c8f5f',
       secondaryColor = '#faf8f5',
       textColor = '#fff',

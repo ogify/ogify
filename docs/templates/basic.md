@@ -44,7 +44,7 @@ const imageBuffer = await renderer.renderToImage('basic', {
 | --------- | ---- | -------- | ------- | ----------- |
 | `title` | `string` | ✅ | - | Main headline of the image |
 | `subtitle` | `string` | ❌ | - | Secondary description or tagline |
-| `layout` | `'aligned' \| 'centered' \| 'split'` | ❌ | `'split'` | Visual arrangement of elements |
+| `layout` | `'aligned' \| 'centered' \| 'split'` | ❌ | `'aligned'` | Visual arrangement of elements |
 | `brandName` | `string` | ❌ | - | Your brand or website name |
 | `brandLogo` | `string` | ❌ | - | URL to your brand logo |
 | `cta` | `string` | ❌ | - | Call-to-action text (e.g., "Read More") |
