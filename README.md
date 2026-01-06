@@ -6,7 +6,7 @@
 
 Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just copy & paste the production-ready templates.
 
-![OGify](/apps/examples/outputs/aligned-aligned-ltr.png)
+![OGify](/docs/assets/preview.png)
 
 ## ⚡ Why OGify?
 

@@ -65,7 +65,7 @@ const imageBuffer = await renderer.renderToImage('basic', {
 });
 ```
 
-![Centered layout example](./images/basic/aligned-centered-ltr.png)
+![Centered layout example](./images/basic/centered-ltr.png)
 
 **Visual Description**: All content is centered vertically and horizontally. Logo appears at the top, followed by title, subtitle, CTA, and metadata at the bottom.
 
@@ -85,7 +85,7 @@ const imageBuffer = await renderer.renderToImage('basic', {
 });
 ```
 
-![Aligned layout example](./images/basic/aligned-aligned-ltr.png)
+![Aligned layout example](./images/basic/aligned-ltr.png)
 
 **Visual Description**: Content is left-aligned (or right-aligned for RTL). Logo at the top-left, title and subtitle stacked, with brand info and CTA at the bottom.
 
@@ -106,7 +106,7 @@ const imageBuffer = await renderer.renderToImage('basic', {
 });
 ```
 
-![Split layout example](./images/basic/aligned-split-ltr.png)
+![Split layout example](./images/basic/split-ltr.png)
 
 **Visual Description**: Two-column layout. Left side (1/3 width) shows logo, brand name, and metadata. Right side (2/3 width) displays title, subtitle, and CTA.
 
@@ -145,11 +145,11 @@ When `isRTL: true` is set, the layout automatically mirrors, text aligns to the 
 
 ### RTL Layout Examples
 
-![Centered layout (RTL)](./images/basic/aligned-centered-rtl.png)
+![Centered layout (RTL)](./images/basic/centered-rtl.png)
 <!-- slide -->
-![Aligned layout (RTL)](./images/basic/aligned-aligned-rtl.png)
+![Aligned layout (RTL)](./images/basic/aligned-rtl.png)
 <!-- slide -->
-![Split layout (RTL)](./images/basic/aligned-split-rtl.png)
+![Split layout (RTL)](./images/basic/split-rtl.png)
 
 ## Advanced Examples
 
