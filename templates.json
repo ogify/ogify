@@ -1,17 +1,25 @@
 {
-  "name": "free",
+  "name": "Free templates",
   "homepage": "https://ogify.dev",
   "items": [
     {
       "name": "Basic",
-      "description": "Free template for Open Graph images",
-      "preview": "https://ogify.dev/templates/basic.png",
+      "description": "A basic multi-purpose template",
+      "preview": "https://assets.ogify.dev/templates/basic/aligned.png",
       "filePath": "packages/templates/basic/index.ts",
       "packageName": "@ogify/templates/basic",
       "variants": [
         {
-          "name": "Default",
-          "preview": "https://ogify.dev/templates/basic.png"
+          "name": "Aligned",
+          "preview": "https://assets.ogify.dev/templates/basic/aligned.png"
+        },
+        {
+          "name": "Centered",
+          "preview": "https://assets.ogify.dev/templates/basic/centered.png"
+        },
+        {
+          "name": "Split",
+          "preview": "https://assets.ogify.dev/templates/basic/split.png"
         }
       ]
     }
