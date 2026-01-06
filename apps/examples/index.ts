@@ -73,7 +73,7 @@ async function main() {
         }
       );
       await writeFile(
-        `outputs/aligned-${variant.layout}-${variant.isRTL ? 'rtl' : 'ltr'}.png`,
+        `outputs/${variant.layout}-${variant.isRTL ? 'rtl' : 'ltr'}.png`,
         imageBuffer
       );
       const end = Date.now();
