@@ -44,4 +44,4 @@ renderer: ({ params }) => `
 
 ## Performance
 
-Emoji assets are cached automatically by the renderer's cache system to ensure subsequent uses are fast.
+Emoji assets are cached automatically by the renderer's [cache system](./cache.md) to ensure subsequent uses are fast.

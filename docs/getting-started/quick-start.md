@@ -67,5 +67,5 @@ return new Response(imageBuffer, {
 ## Next Steps
 
 - Explore the [API Reference](../api-reference/core.md) to learn more about configuration options.
-- Check out the [Templates](../api-reference/templates.md) to see available designs.
+- Check out the [Basic Template](../api-reference/templates/basic.md) to see available designs and parameters.
 - See integration guides for [Next.js App Router](../recipes/nextjs-app-router.md) and [Pages Router](../recipes/nextjs-page-router.md).

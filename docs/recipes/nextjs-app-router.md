@@ -93,3 +93,10 @@ export const metadata = {
   },
 };
 ```
+
+## See Also
+
+- [Cache Configuration](../getting-started/cache.md) - Optimize performance with caching
+- [Core API Reference](../api-reference/core.md) - Full API documentation
+- [Basic Template](../api-reference/templates/basic.md) - Template parameters and examples
+- [Next.js Pages Router](./nextjs-page-router.md) - Integration for Pages Router

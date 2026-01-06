@@ -39,3 +39,8 @@ renderer: ({ params, isRTL }) => {
   `;
 }
 ```
+
+## See Also
+
+- [Custom Templates](./custom-template.md) - Creating RTL-compatible custom templates
+- [Basic Template](../api-reference/templates/basic.md) - RTL examples and usage

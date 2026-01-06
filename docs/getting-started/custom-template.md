@@ -38,7 +38,7 @@ const myTemplate = defineTemplate<MyTemplateParams>({
 
 ## Styling
 
-We use [Satori](https://github.com/vercel/satori) under the hood, which supports a subset of CSS properties.
+We use [Satori](https://github.com/vercel/satori) under the hood, which supports a subset of CSS properties. For a complete list of supported CSS features, see [Template Features](./template-features.md).
 
 ### Inline Styles
 
@@ -69,3 +69,11 @@ Your renderer function receives `params` which contains whatever data you pass d
 - **Keep it simple**: Satori is powerful but has some limitations compared to a full browser engine. Avoid complex CSS selectors or deeply nested absolute positioning if possible.
 - **Use `display: flex`**: Flexbox is the most reliable way to layout content in Satori.
 - **Test with `isRTL`**: Ensure your template handles RTL content gracefully if you plan to support international audiences.
+
+## See Also
+
+- [Template Features](./template-features.md) - Complete list of supported CSS properties
+- [Font Loader](./font-loader.md) - Using Google Fonts or custom fonts
+- [Emoji Loader](./emoji-loader.md) - Rendering emojis in your templates
+- [RTL Support](./rtl.md) - Right-to-left language support
+- [Core API Reference](../api-reference/core.md) - Full API documentation

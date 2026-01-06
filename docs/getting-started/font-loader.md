@@ -77,3 +77,12 @@ renderer: ({ params }) => `
   </div>
 `
 ```
+
+## Performance
+
+Remote fonts (from Google Fonts or custom URLs) are automatically cached by the renderer's [cache system](./cache.md) to avoid repeated network requests and improve performance.
+
+## See Also
+
+- [Cache Configuration](./cache.md) - Learn about caching options
+- [Custom Templates](./custom-template.md) - Using fonts in custom templates

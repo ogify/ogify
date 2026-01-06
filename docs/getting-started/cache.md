@@ -52,3 +52,7 @@ const renderer = createRenderer({
   cache: false
 });
 ```
+
+## See Also
+
+- [Core API Reference](../api-reference/core.md) - Full documentation on cache configuration options

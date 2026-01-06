@@ -194,7 +194,7 @@ const imageBuffer = await renderer.renderToImage('basic', {
 
 ## Related Documentation
 
-- [Quick Start Guide](../getting-started/quick-start.md)
-- [Custom Templates](../getting-started/custom-template.md)
-- [RTL Support](../getting-started/rtl.md)
-- [Templates API Reference](../api-reference/templates.md)
+- [Quick Start Guide](../../getting-started/quick-start.md)
+- [Custom Templates](../../getting-started/custom-template.md)
+- [RTL Support](../../getting-started/rtl.md)
+- [Core API Reference](../core.md)

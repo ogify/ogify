@@ -30,7 +30,7 @@ Detailed API documentation:
 
 Explore available templates:
 
-- **[Basic Template](./templates/basic.md)** - Versatile template for blogs, announcements, and more
+- **[Basic Template](./api-reference/templates/basic.md)** - Versatile template for blogs, announcements, and more
 
 ## 🧪 Framework Integration
 
