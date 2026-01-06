@@ -30,7 +30,7 @@ export const size = {
 
 export const contentType = 'image/png';
 
-export default async function Image() {
+export default async function OgImage() {
   // Generate the image buffer
   const buffer = await renderer.renderToImage('basic', {
     title: 'My Page Title',
