@@ -41,7 +41,7 @@ const template = defineTemplate<TemplateParams>({
       textColor = '#fff',
       extras = [],
       cta = '',
-      pattern = 'https://www.transparenttextures.com/patterns/cubes.png',
+      pattern = 'https://assets.ogify.dev/patterns/cubes.png',
     } = params;
 
     const backgroundStyles = {
