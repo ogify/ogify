@@ -17,13 +17,9 @@ Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just c
 - ⚡ **Smart caching**: Automatically caches fonts, emojis, and generated images - no configuration required.
 - 🌍 **RTL Support**: Built-in support for Right-to-Left languages like Arabic, Hebrew, and Persian.
 
-## 📚 Documentation Sections
+## 📚 Documentation
 
-- [**Getting Started**](/docs/getting-started/installation.md): Learn how to install and generate your first image.
-- [**API Reference**](/docs/api-reference/core.md): Detailed documentation of the Core API and Templates.
-- [**Recipes**](/docs/recipes/nextjs-app-router.md): Integration guides.
-  - [Next.js App Router](/docs/recipes/nextjs-app-router.md)
-  - [Next.js Pages Router](/docs/recipes/nextjs-page-router.md)
+For more information, see the [OGify documentation](/docs/README.md).
 
 ## 🤝 Contributing
 
