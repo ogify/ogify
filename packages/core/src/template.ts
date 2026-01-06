@@ -123,5 +123,5 @@ export async function renderTemplate<TParams = OgTemplateParams>(
 
   // Step 6: Convert Uint8Array to Node.js Buffer for compatibility
   // Buffer is more widely supported in Node.js ecosystems
-  return Buffer.from(pngData.asPng());
+  return pngData.asPng();
 }
