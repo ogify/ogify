@@ -41,6 +41,7 @@ Integration guides for popular frameworks:
 
 ## 🔗 Links
 
+- [Official Website](https://ogify.dev) - Homepage and documentation
 - [Template Gallery](https://ogify.dev/templates) - Browse all available templates
 - [GitHub Repository](https://github.com/revolabs/ogify) - Source code and issues
 - [NPM Package](https://www.npmjs.com/package/@ogify/core) - Package registry

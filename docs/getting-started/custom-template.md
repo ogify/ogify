@@ -1,6 +1,6 @@
 # Custom Templates
 
-While OGify comes with production-ready templates, you may want to create your own to match your brand's unique identity.
+While OGify comes with production-ready templates (browse them at the [Template Gallery](https://ogify.dev/templates)), you may want to create your own to match your brand's unique identity.
 
 ## `defineTemplate`
 

@@ -1,6 +1,6 @@
 # Basic Template
 
-The **Basic** template is a versatile, production-ready template suitable for various use cases: blog posts, announcements, product launches, and general-purpose Open Graph images.
+The **Basic** template is a versatile, production-ready template suitable for various use cases: blog posts, announcements, product launches, and general-purpose Open Graph images. Explore more templates at the [Template Gallery](https://ogify.dev/templates).
 
 ## Features
 

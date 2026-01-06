@@ -4,7 +4,7 @@ This guide will walk you through generating your first Open Graph image using OG
 
 ## 1. Import a Template
 
-OGify comes with a set of ready-to-use templates. For this guide, we'll use the `basic` template.
+OGify comes with a set of ready-to-use templates. For this guide, we'll use the `basic` template. Browse all available templates at the [Template Gallery](https://ogify.dev/templates).
 
 ```typescript
 import template from '@ogify/templates/basic';

@@ -1,6 +1,6 @@
 # Installation
 
-Getting started with OGify is straightforward. You can install the core package and the templates package using your preferred package manager.
+Getting started with OGify is straightforward. Visit the [official website](https://ogify.dev) for more information, or install the core package and the templates package using your preferred package manager.
 
 ## Install Packages
 
