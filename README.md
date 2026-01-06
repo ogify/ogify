@@ -19,7 +19,9 @@ Zero-config dynamic Open Graph images for Next.js, Nuxt, Remix, and more. Just c
 
 ## 📚 Documentation
 
-For more information, see the [OGify documentation](/docs/README.md).
+- 🌐 **[Website](https://ogify.dev)** - Official website
+- 🎨 **[Template Gallery](https://ogify.dev/templates)** - Browse all available templates
+- 📖 **[Documentation](/docs/README.md)** - Complete guides and API reference
 
 ## 🤝 Contributing
 
