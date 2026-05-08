@@ -55,8 +55,9 @@ const DEFAULT_HEIGHT = 630;
  * @param options - Optional rendering options
  * @param options.width - Custom image width in pixels (default: 1200)
  * @param options.height - Custom image height in pixels (default: 630)
- * @param options.scale - Render scale for supersampling (default: 1). Output
- *   dimensions will be (width × scale) × (height × scale).
+ * @param options.scale - Render scale factor for supersampling (default: 1).
+ *   Supports floats (e.g. 1.25, 1.5, 2). Output PNG will be
+ *   `(width × scale) × (height × scale)` pixels. Clamped to [1, 4].
  * @returns Promise resolving to a PNG image buffer
  *
  * @throws Will throw if:
@@ -75,10 +76,11 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   const fonts = options?.fonts?.length ? options.fonts : template.fonts;
   const emojiProvider = options?.emojiProvider || template.emojiProvider || 'noto';
 
-  // Clamp scale to safe integer range [1, 4] to prevent OOM.
-  // Non-integers are rounded first, then clamped.
+  // Clamp scale to [1, 4]. Float values supported (e.g. 1.25, 1.5, 2).
+  // Math.round is intentionally NOT applied here — it is applied only to the
+  // final pixel value in fitTo to avoid sub-pixel Resvg dimensions.
   // undefined/null fall back to 1 (default, no supersampling).
-  const scale = Math.max(1, Math.min(4, Math.round(options?.scale ?? 1)));
+  const scale = Math.max(1, Math.min(4, options?.scale ?? 1));
 
   // Step 1: Load all fonts specified in the template
   // Fonts are loaded in parallel for optimal performance
@@ -91,7 +93,7 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   const htmlString = await template.renderer({
     params: typeof params === 'function' ? await params() : params,
     ...options,
-    width,  // original dimensions — templates design for these values
+    width, // original dimensions — templates design for these values
     height,
   });
 
@@ -109,8 +111,8 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   // which can rasterize the same SVG at any resolution without losing fidelity.
   // eslint-disable-next-line
   const svg = await satori(element as any, {
-    width,   // original width (e.g. 1200) — NOT scaled
-    height,  // original height (e.g. 630)  — NOT scaled
+    width, // original width (e.g. 1200) — NOT scaled
+    height, // original height (e.g. 630)  — NOT scaled
 
     // Loaded fonts for text rendering
     fonts: satoriFonts,
@@ -122,9 +124,9 @@ export async function renderTemplate<TParams = OgTemplateParams>(
     // This is called when Satori encounters characters that need special handling
     loadAdditionalAsset: async (code: string, segment: string) => {
       return loadAdditionalAsset({
-        code,          // Asset type ('emoji' or other)
-        segment,       // The character(s) to load
-        fonts,         // Available fonts for fallback detection
+        code, // Asset type ('emoji' or other)
+        segment, // The character(s) to load
+        fonts, // Available fonts for fallback detection
         emojiProvider, // Emoji provider (default: noto)
       });
     },
@@ -145,7 +147,9 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   const pngData = await renderAsync(svg, {
     fitTo: {
       mode: 'width',
-      value: width * scale, // rasterize at (width × scale) pixels wide
+      // Math.round ensures integer pixel value (Resvg requires integer dimensions).
+      // Examples: scale=1.25 → 1500, scale=1.5 → 1800, scale=2 → 2400
+      value: Math.round(width * scale),
     },
   });
 
