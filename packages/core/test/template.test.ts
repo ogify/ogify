@@ -208,6 +208,26 @@ describe('renderTemplate', () => {
       );
     });
 
+    it('should handle float scale values (e.g. 1.5) by rounding only the final Resvg fitTo value', async () => {
+      await renderTemplate(mockTemplate, { text: 'Hello' }, { scale: 1.5 });
+
+      // Satori always renders at original dimensions
+      expect(satori).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          width: 1200, // original
+          height: 630, // original
+        })
+      );
+      // Resvg upscales to 1.5x (1200 * 1.5 = 1800)
+      expect(vi.mocked(renderAsync)).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          fitTo: { mode: 'width', value: 1800 }, 
+        })
+      );
+    });
+
     it('should pass original width/height to template renderer regardless of scale', async () => {
       const rendererSpy = vi.fn().mockReturnValue('<div></div>');
       const templateWithSpy = { ...mockTemplate, renderer: rendererSpy };
