@@ -144,6 +144,30 @@ export type OgTemplateOptions = {
   height?: number;
 
   isRTL?: boolean;
+
+  /**
+   * Render scale factor for supersampling.
+   *
+   * Satori renders the internal SVG at `(width × scale) × (height × scale)`,
+   * then Resvg downsamples the PNG back to the original `width × height`.
+   *
+   * The template renderer always receives the **original** width/height —
+   * scale is an implementation detail of the rendering engine and is fully
+   * backward compatible.
+   *
+   * Use this to improve sharpness of text, borders, and gradients without
+   * changing the output image dimensions.
+   *
+   * - `1` — no supersampling (current behavior, default)
+   * - `2` — recommended: 4× pixel density, best quality/performance balance
+   * - `3` — ultra quality (slower, higher memory usage)
+   * - `4` — maximum allowed (clamped to prevent OOM)
+   *
+   * Values outside `[1, 4]` are clamped. Non-integers are rounded.
+   *
+   * @default 1
+   */
+  scale?: number;
 };
 
 /**
