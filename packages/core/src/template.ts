@@ -67,30 +67,43 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   const fonts = options?.fonts?.length ? options.fonts : template.fonts;
   const emojiProvider = options?.emojiProvider || template.emojiProvider || 'noto';
 
+  // Clamp scale to safe integer range [1, 4] to prevent OOM.
+  // Non-integers are rounded first, then clamped.
+  // undefined/null fall back to 1 (default, no supersampling).
+  const scale = Math.max(1, Math.min(4, Math.round(options?.scale ?? 1)));
+
+  // Internal render dimensions used by Satori (scaled up for supersampling).
+  // Template renderer always receives the ORIGINAL width/height (backward compatible).
+  const renderWidth = width * scale;
+  const renderHeight = height * scale;
+
   // Step 1: Load all fonts specified in the template
   // Fonts are loaded in parallel for optimal performance
   // The font loader handles three sources: data, URL, and Google Fonts
   const satoriFonts: SatoriOptions['fonts'] = await loadFonts(fonts);
 
-  // Step 2: Generate HTML string from the template function
-  // The template receives the user parameters and width/height for responsive layouts
+  // Step 2: Generate HTML string from the template function.
+  // IMPORTANT: always pass original width/height, never the scaled dimensions.
+  // Templates must NOT be aware of the render scale — it is a rendering concern only.
   const htmlString = await template.renderer({
     params: typeof params === 'function' ? await params() : params,
     ...options,
+    width, // override any scaled value from options spread
+    height, // override any scaled value from options spread
   });
 
   // Step 3: Convert HTML string to React-like element tree
   // satori-html parses the HTML and creates a structure Satori can understand
   const element = html(htmlString);
 
-  // Step 4: Render the element tree to SVG using Satori
-  // Satori converts the element tree to SVG with proper text rendering,
-  // layout calculations, and font embedding
+  // Step 4: Render the element tree to SVG using Satori at high resolution.
+  // When scale > 1, Satori computes layout at (renderWidth × renderHeight),
+  // producing a higher-fidelity SVG before rasterization.
   // eslint-disable-next-line
   const svg = await satori(element as any, {
-    // Image dimensions (customizable via options parameter)
-    width,
-    height,
+    // Internal render dimensions (scaled up for supersampling)
+    width: renderWidth, // e.g. 2400 when scale=2
+    height: renderHeight, // e.g. 1260 when scale=2
 
     // Loaded fonts for text rendering
     fonts: satoriFonts,
@@ -110,14 +123,15 @@ export async function renderTemplate<TParams = OgTemplateParams>(
     },
   });
 
-  // Step 5: Convert SVG to PNG using Resvg
-  // Resvg is a high-quality SVG renderer that produces sharp PNG images
-  // Render SVG to PNG with width-based scaling
-  // The 'width' mode maintains aspect ratio while ensuring the image matches the specified width
+  // Step 5: Convert SVG to PNG using Resvg.
+  // fitTo targets the ORIGINAL width — Resvg downsamples the high-res SVG
+  // back to the intended output dimensions, applying anti-aliasing in the process.
+  // This is the key step that gives supersampling its quality benefit:
+  // the high-res rasterization is folded into the downsample pass.
   const pngData = await renderAsync(svg, {
     fitTo: {
       mode: 'width', // Scale based on width, maintain aspect ratio
-      value: width,
+      value: width, // Always the original width (e.g. 1200), never scaled
     },
   });
 
