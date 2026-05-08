@@ -168,38 +168,42 @@ describe('renderTemplate', () => {
       );
     });
 
-    it('should render Satori at 2x but keep Resvg target at original width when scale=2', async () => {
+    it('should keep Satori at original dims and upscale Resvg fitTo when scale=2', async () => {
       await renderTemplate(mockTemplate, { text: 'Hello' }, { scale: 2 });
 
+      // Satori always renders at original dimensions — font sizes stay correct
       expect(satori).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          width: 2400, // 1200 * 2
-          height: 1260, // 630 * 2
+          width: 1200, // original, NOT 2400
+          height: 630, // original, NOT 1260
         })
       );
+      // Resvg upscales the vector SVG to @2x
       expect(vi.mocked(renderAsync)).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          fitTo: { mode: 'width', value: 1200 }, // always original
+          fitTo: { mode: 'width', value: 2400 }, // 1200 * 2
         })
       );
     });
 
-    it('should render Satori at 3x but keep Resvg target at original width when scale=3', async () => {
+    it('should keep Satori at original dims and upscale Resvg fitTo when scale=3', async () => {
       await renderTemplate(mockTemplate, { text: 'Hello' }, { scale: 3 });
 
+      // Satori always renders at original dimensions
       expect(satori).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          width: 3600, // 1200 * 3
-          height: 1890, // 630 * 3
+          width: 1200, // original, NOT 3600
+          height: 630, // original, NOT 1890
         })
       );
+      // Resvg upscales the vector SVG to @3x
       expect(vi.mocked(renderAsync)).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          fitTo: { mode: 'width', value: 1200 },
+          fitTo: { mode: 'width', value: 3600 }, // 1200 * 3
         })
       );
     });
@@ -218,26 +222,40 @@ describe('renderTemplate', () => {
       );
     });
 
-    it('should clamp scale=0 to 1 (no crash, behaves as scale=1)', async () => {
+    it('should clamp scale=0 to 1 — Satori at original, Resvg fitTo original', async () => {
       await renderTemplate(mockTemplate, { text: 'Hello' }, { scale: 0 });
 
       expect(satori).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          width: 1200, // 1200 * 1 (clamped from 0)
+          width: 1200,
           height: 630,
+        })
+      );
+      expect(vi.mocked(renderAsync)).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          fitTo: { mode: 'width', value: 1200 }, // 1200 * 1 (clamped from 0)
         })
       );
     });
 
-    it('should clamp scale=5 to 4 (max allowed)', async () => {
+    it('should clamp scale=5 to 4 — Resvg fitTo width*4', async () => {
       await renderTemplate(mockTemplate, { text: 'Hello' }, { scale: 5 });
 
+      // Satori always at original
       expect(satori).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          width: 4800, // 1200 * 4 (clamped from 5)
-          height: 2520, // 630 * 4 (clamped from 5)
+          width: 1200,
+          height: 630,
+        })
+      );
+      // Resvg clamped to scale=4
+      expect(vi.mocked(renderAsync)).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          fitTo: { mode: 'width', value: 4800 }, // 1200 * 4 (clamped from 5)
         })
       );
     });
