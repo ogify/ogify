@@ -29,6 +29,8 @@ vi.mock('../src/utils/additional-asset-loader', () => ({
 import satori from 'satori';
 import { html } from 'satori-html';
 import { loadFonts } from '../src/utils/font-loader';
+import { renderAsync } from '@resvg/resvg-js';
+
 
 describe('renderTemplate', () => {
   const mockTemplate: OgTemplate = {
@@ -145,5 +147,99 @@ describe('renderTemplate', () => {
         segment: '👋',
       })
     );
+  });
+
+  describe('scale option', () => {
+    it('should use default scale=1 when scale is not provided', async () => {
+      await renderTemplate(mockTemplate, { text: 'Hello' });
+
+      expect(satori).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          width: 1200,
+          height: 630,
+        })
+      );
+      expect(vi.mocked(renderAsync)).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          fitTo: { mode: 'width', value: 1200 },
+        })
+      );
+    });
+
+    it('should render Satori at 2x but keep Resvg target at original width when scale=2', async () => {
+      await renderTemplate(mockTemplate, { text: 'Hello' }, { scale: 2 });
+
+      expect(satori).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          width: 2400, // 1200 * 2
+          height: 1260, // 630 * 2
+        })
+      );
+      expect(vi.mocked(renderAsync)).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          fitTo: { mode: 'width', value: 1200 }, // always original
+        })
+      );
+    });
+
+    it('should render Satori at 3x but keep Resvg target at original width when scale=3', async () => {
+      await renderTemplate(mockTemplate, { text: 'Hello' }, { scale: 3 });
+
+      expect(satori).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          width: 3600, // 1200 * 3
+          height: 1890, // 630 * 3
+        })
+      );
+      expect(vi.mocked(renderAsync)).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          fitTo: { mode: 'width', value: 1200 },
+        })
+      );
+    });
+
+    it('should pass original width/height to template renderer regardless of scale', async () => {
+      const rendererSpy = vi.fn().mockReturnValue('<div></div>');
+      const templateWithSpy = { ...mockTemplate, renderer: rendererSpy };
+
+      await renderTemplate(templateWithSpy, { text: 'Hello' }, { width: 1200, height: 630, scale: 3 });
+
+      expect(rendererSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: 1200, // original, NOT 3600
+          height: 630, // original, NOT 1890
+        })
+      );
+    });
+
+    it('should clamp scale=0 to 1 (no crash, behaves as scale=1)', async () => {
+      await renderTemplate(mockTemplate, { text: 'Hello' }, { scale: 0 });
+
+      expect(satori).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          width: 1200, // 1200 * 1 (clamped from 0)
+          height: 630,
+        })
+      );
+    });
+
+    it('should clamp scale=5 to 4 (max allowed)', async () => {
+      await renderTemplate(mockTemplate, { text: 'Hello' }, { scale: 5 });
+
+      expect(satori).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          width: 4800, // 1200 * 4 (clamped from 5)
+          height: 2520, // 630 * 4 (clamped from 5)
+        })
+      );
+    });
   });
 });
