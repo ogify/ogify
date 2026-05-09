@@ -120,6 +120,9 @@ export async function renderTemplate<TParams = OgTemplateParams>(
     // Embed fonts in the SVG for portability
     embedFont: true,
 
+    // Satori uses pointScaleFactor to decide how to scale SVG coordinates.
+    pointScaleFactor: 2,
+
     // Dynamic asset loader for emojis and fallback fonts
     // This is called when Satori encounters characters that need special handling
     loadAdditionalAsset: async (code: string, segment: string) => {
@@ -135,15 +138,15 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   // Step 5: Rasterize the SVG to PNG using Resvg at scaled resolution.
   //
   // Since the SVG is a vector format, Resvg can rasterize it at ANY resolution
-  // with full quality. When scale > 1:
-  //   - fitTo upscales the PNG output to (width × scale) × (height × scale)
-  //   - pointScaleFactor informs Resvg of the device pixel ratio, improving
-  //     sub-pixel rendering: font hinting, anti-aliasing, thin stroke sharpness
+  // with full quality. When scale > 1, fitTo upscales the output to
+  // (width × scale) × (height × scale) pixels, yielding sharper text,
+  // anti-aliased edges, and finer gradients compared to scale=1.
   //
   // Output PNG dimensions:
-  //   scale=1 → 1200×630   (standard, no change)
-  //   scale=2 → 2400×1260  (@2x retina)
-  //   scale=3 → 3600×1890  (@3x ultra)
+  //   scale=1    → 1200×630   (standard, no change)
+  //   scale=1.5  → 1800×945
+  //   scale=2    → 2400×1260  (@2x retina)
+  //   scale=3    → 3600×1890  (@3x ultra)
   const pngData = await renderAsync(svg, {
     fitTo: {
       mode: 'width',
