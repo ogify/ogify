@@ -31,7 +31,6 @@ import { html } from 'satori-html';
 import { loadFonts } from '../src/utils/font-loader';
 import { renderAsync } from '@resvg/resvg-js';
 
-
 describe('renderTemplate', () => {
   const mockTemplate: OgTemplate = {
     renderer: (props) => `<div>${props.params.text}</div>`,
@@ -40,6 +39,38 @@ describe('renderTemplate', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('should pass a React-like node to satori without calling html', async () => {
+    const node = { type: 'div', props: { children: 'Hello' } };
+    const jsxTemplate: OgTemplate = {
+      ...mockTemplate,
+      renderer: () => node as any,
+    };
+
+    await renderTemplate(jsxTemplate, { text: 'Hello' });
+
+    expect(html).not.toHaveBeenCalled();
+    expect(satori).toHaveBeenCalledWith(
+      node,
+      expect.objectContaining({
+        width: 1200,
+        height: 630,
+        fonts: [],
+        embedFont: true,
+      })
+    );
+  });
+
+  it('should throw when renderer returns null', async () => {
+    const badTemplate: OgTemplate = {
+      ...mockTemplate,
+      renderer: () => null as any,
+    };
+
+    await expect(renderTemplate(badTemplate, { text: 'Hello' })).rejects.toThrow(
+      /null or undefined/
+    );
   });
 
   it('should execute the rendering pipeline correctly', async () => {
@@ -223,7 +254,7 @@ describe('renderTemplate', () => {
       expect(vi.mocked(renderAsync)).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          fitTo: { mode: 'width', value: 1800 }, 
+          fitTo: { mode: 'width', value: 1800 },
         })
       );
     });
@@ -232,7 +263,11 @@ describe('renderTemplate', () => {
       const rendererSpy = vi.fn().mockReturnValue('<div></div>');
       const templateWithSpy = { ...mockTemplate, renderer: rendererSpy };
 
-      await renderTemplate(templateWithSpy, { text: 'Hello' }, { width: 1200, height: 630, scale: 3 });
+      await renderTemplate(
+        templateWithSpy,
+        { text: 'Hello' },
+        { width: 1200, height: 630, scale: 3 }
+      );
 
       expect(rendererSpy).toHaveBeenCalledWith(
         expect.objectContaining({

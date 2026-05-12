@@ -31,17 +31,26 @@
     "email": "info@revolabs.io"
   },
   "license": "MIT",
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
-    "lru-cache": "^11.2.4",
+    "lru-cache": "^11.3.6",
     "rtl-css-js": "^1.16.1",
-    "satori": "^0.18.3",
+    "satori": "^0.26.0",
     "satori-html": "^0.3.2"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@vitest/ui": "^4.0.15",
-    "happy-dom": "^20.0.11",
+    "@types/react": "^18.3.12",
+    "@vitest/ui": "^4.1.6",
+    "happy-dom": "^20.9.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"

@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 /**
  * Type definitions for the OGify core library.
  *
@@ -191,6 +193,9 @@ export type OgTemplateOptions = {
  */
 export type OgTemplateParams = Record<string, string | string[] | number | boolean>;
 
+/** Return value of a template `renderer`: HTML string (parsed via satori-html) or a node tree for Satori. */
+export type OgTemplateRenderResult = string | ReactNode;
+
 /**
  * Complete definition of an Open Graph image template.
  *
@@ -202,12 +207,14 @@ export type OgTemplateParams = Record<string, string | string[] | number | boole
  */
 export type OgTemplate<TParams = OgTemplateParams> = {
   /**
-   * Function that generates HTML markup from template parameters.
+   * Returns HTML markup as a string (parsed with satori-html) or a React node tree passed directly to Satori.
    *
-   * The HTML should use inline styles (Tailwind-like utilities are supported).
-   * Flexbox and basic CSS properties are supported by Satori.
+   * For strings: Tailwind-like utilities on `class` are supported via satori-html.
+   * For React trees: use Satori-supported elements and `style` / experimental `tw` utilities.
    */
-  renderer: (props: OgTemplateOptions & { params: TParams }) => string;
+  renderer: (
+    props: OgTemplateOptions & { params: TParams }
+  ) => OgTemplateRenderResult | Promise<OgTemplateRenderResult>;
 
   /**
    * Custom fonts to use in this template.

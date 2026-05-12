@@ -2,7 +2,7 @@
  * OG image rendering engine.
  *
  * This module provides the core rendering pipeline that converts
- * HTML templates into PNG images suitable for Open Graph meta tags.
+ * HTML strings (via satori-html) or JSX / React node trees into PNG images.
  *
  * The rendering process uses:
  * - Satori: Converts HTML/CSS to SVG
@@ -10,9 +10,10 @@
  */
 
 import satori from 'satori';
+import type { ReactNode } from 'react';
 import { type SatoriOptions } from 'satori';
-import { html } from 'satori-html';
 import { renderAsync } from '@resvg/resvg-js';
+import { html } from 'satori-html';
 
 import type { OgTemplate, OgTemplateOptions, OgTemplateParams } from './types';
 import { loadAdditionalAsset } from './utils/additional-asset-loader';
@@ -39,8 +40,8 @@ const DEFAULT_HEIGHT = 630;
  * **Rendering Pipeline:**
  *
  * 1. **Font Loading**: Load all fonts specified in the template
- * 2. **HTML Generation**: Execute the template's renderer function with parameters
- * 3. **HTML to Element Tree**: Convert HTML string to React-like element tree
+ * 2. **Markup generation**: Execute the template's renderer (HTML string or React node tree)
+ * 3. **Element tree**: If string, parse with satori-html; otherwise use the returned node tree
  * 4. **SVG Rendering**: Render element tree to SVG using Satori (at original dimensions)
  * 5. **PNG Conversion**: Rasterize SVG using Resvg at (width × scale) for supersampling
  *
@@ -87,19 +88,23 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   // The font loader handles three sources: data, URL, and Google Fonts
   const satoriFonts: SatoriOptions['fonts'] = await loadFonts(fonts);
 
-  // Step 2: Generate HTML string from the template function.
+  // Step 2: Run the template renderer (HTML string or React node tree).
   // Template always receives the ORIGINAL width/height — scale is transparent to templates.
-  // This ensures font sizes and layout values in templates are always correct.
-  const htmlString = await template.renderer({
+  const raw = await template.renderer({
     params: typeof params === 'function' ? await params() : params,
     ...options,
     width, // original dimensions — templates design for these values
     height,
   });
 
-  // Step 3: Convert HTML string to React-like element tree
-  // satori-html parses the HTML and creates a structure Satori can understand
-  const element = html(htmlString);
+  if (raw == null) {
+    throw new Error(
+      'Template renderer returned null or undefined; expected an HTML string or a valid React node tree.'
+    );
+  }
+
+  // Step 3: HTML string → satori-html tree; otherwise use the node tree as-is for Satori.
+  const element = typeof raw === 'string' ? html(raw) : raw;
 
   // Step 4: Render the element tree to SVG using Satori at ORIGINAL dimensions.
   //
@@ -110,7 +115,7 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   // The SVG output is a vector format — quality scaling happens in Step 5 (Resvg),
   // which can rasterize the same SVG at any resolution without losing fidelity.
   // eslint-disable-next-line
-  const svg = await satori(element as any, {
+  const svg = await satori(element as ReactNode, {
     width, // original width (e.g. 1200) — NOT scaled
     height, // original height (e.g. 630)  — NOT scaled
 
