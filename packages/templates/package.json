@@ -32,10 +32,12 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@ogify/core": "*"
+    "react": ">=18"
   },
   "devDependencies": {
     "@ogify/core": "workspace:*",
+    "@types/react": "^18.3.12",
+    "react": "^18.3.1",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
