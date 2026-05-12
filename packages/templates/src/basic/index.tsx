@@ -124,7 +124,7 @@ const template = defineTemplate<TemplateParams>({
             isRTL ? 'items-end text-right' : 'items-start text-left'
           )}
         >
-          {brandLogo ? <img tw="mb-6 h-18" src={brandLogo} alt={brandName} /> : null}
+          {brandLogo ? <img tw="mb-10 h-16" src={brandLogo} alt={brandName} /> : null}
           {titleBlock}
           {subtitleBlock}
           <div
