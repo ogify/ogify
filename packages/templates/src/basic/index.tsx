@@ -94,7 +94,7 @@ const template = defineTemplate<TemplateParams>({
           layout === 'centered' ? 'justify-center' : isRTL ? 'justify-end' : 'justify-start'
         )}
       >
-        {title}
+        {subtitle}
       </div>
     ) : null;
 
