@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-05-13
+
+### Added
+
+#### `@ogify/core`
+
+- **`OgTemplate.renderer` may return JSX** — `renderer` can return `string`, `ReactNode`, or `Promise` of either. HTML strings are still parsed with `satori-html`; non-string values are passed straight to Satori.
+- **Explicit error when the renderer returns nothing useful** — `null` or `undefined` at the root now throws with a clear message instead of failing later in Satori.
+
+#### `@ogify/templates`
+
+- **`basic` template as TSX** — the built-in basic template is authored in JSX using Satori’s experimental `tw` prop (with local TypeScript augmentation for `tw` on DOM/SVG props).
+
+### Changed
+
+#### `@ogify/core`
+
+- **Optional peer dependency `react`** — consumers who only use HTML-string templates do not need React; JSX templates should depend on `react` (same as `@ogify/templates`).
+
+#### `@ogify/templates`
+
+- **`react` peer dependency** — apps using `@ogify/templates/basic` must provide React for the automatic JSX runtime.
+
+### Fixed
+
+#### `@ogify/templates`
+
+- **Basic template subtitle** — subtitle block now renders `subtitle` instead of mistakenly repeating `title`.
+
+### Notes
+
+- Satori does not support `dangerouslySetInnerHTML`. For inline HTML inside JSX templates, continue to return a full HTML string from `renderer`, or build the tree with elements Satori supports.
+
+---
+
 ## [1.1.0] - 2026-05-09
 
 ### Added
