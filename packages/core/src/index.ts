@@ -18,8 +18,8 @@ export * from './template';
 // Utility functions: clsx.
 export * from './utils/clsx';
 
-// Utility functions: objectToStyle.
-export * from './utils/object-to-style';
+// Utility functions: htmlSnippet.
+export * from './utils/html-snippet';
 
 // Type definitions: OgTemplate, OgTemplateParams, OgFontConfig, OgTemplateRenderer, etc.
 export * from './types';

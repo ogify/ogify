@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { defineTemplate, clsx } from '@ogify/core';
+import { defineTemplate, clsx, htmlSnippet } from '@ogify/core';
 
 export type TemplateParams = {
   title: string;
@@ -83,18 +83,24 @@ const template = defineTemplate<TemplateParams>({
           layout === 'centered' ? 'justify-center' : isRTL ? 'justify-end' : 'justify-start'
         )}
       >
-        {title}
+        {htmlSnippet(title, {
+          justify: layout === 'centered' ? 'center' : isRTL ? 'flex-end' : 'flex-start',
+          fontSize: subtitle ? 56 : 64,
+        })}
       </div>
     );
 
     const subtitleBlock = subtitle ? (
       <div
         tw={clsx(
-          'w-full text-[28px] opacity-80 leading-[1.5] mt-6 flex flex-wrap',
-          layout === 'centered' ? 'justify-center' : isRTL ? 'justify-end' : 'justify-start'
+          'w-full text-[28px] opacity-80 leading-[1.5] mt-6 flex flex-col',
+          layout === 'centered' ? 'text-center' : isRTL ? 'text-right' : 'text-left'
         )}
       >
-        {subtitle}
+        {htmlSnippet(subtitle, {
+          justify: layout === 'centered' ? 'center' : isRTL ? 'flex-end' : 'flex-start',
+          fontSize: 28,
+        })}
       </div>
     ) : null;
 

@@ -91,9 +91,9 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   // Step 2: Run the template renderer (HTML string or React node tree).
   // Template always receives the ORIGINAL width/height — scale is transparent to templates.
   const raw = await template.renderer({
-    params: typeof params === 'function' ? await params() : params,
+    params,
     ...options,
-    width, // original dimensions — templates design for these values
+    width,
     height,
   });
 
