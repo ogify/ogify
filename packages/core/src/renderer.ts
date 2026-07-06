@@ -40,7 +40,10 @@ export function validateTemplate<TemplateParams>(config: OgTemplate<TemplatePara
     throw new Error('Template must have a renderer function');
   }
 
-  // All required fields are present
+  if (!Array.isArray(config.fonts)) {
+    throw new Error('Template must have a fonts array');
+  }
+
   return true;
 }
 
@@ -81,8 +84,11 @@ export class TemplateRenderer<
   /** Configuration including global settings and lifecycle hooks */
   private config: OgTemplateRenderer<TMap>;
 
-  /** Cache manager for fonts and icons */
+  /** Cache manager for rendered images */
   private cacheManager: CacheManager<string, Buffer>;
+
+  /** In-flight renders keyed by cache key to avoid duplicate work */
+  private renderInflight = new Map<string, Promise<Buffer>>();
 
   /**
    * Internal registry mapping template IDs to template definitions.
@@ -121,7 +127,9 @@ export class TemplateRenderer<
   private registerTemplates(templates: { [K in keyof TMap]: OgTemplate<TMap[K]> }): void {
     const keys = Object.keys(templates) as Array<keyof TMap>;
     keys.forEach((key) => {
-      this.templates[key] = templates[key];
+      const template = templates[key];
+      validateTemplate(template);
+      this.templates[key] = template;
     });
   }
 
@@ -199,23 +207,34 @@ export class TemplateRenderer<
       return cached;
     }
 
-    // Step 4: Call beforeRender hook if configured
-    if (this.config.beforeRender) {
-      await this.config.beforeRender(templateId, mergedParams);
+    const inflightRender = this.renderInflight.get(cacheKey);
+    if (inflightRender) {
+      return inflightRender;
     }
 
-    // Step 5: Delegate to the core rendering function
-    const imageBuffer = await renderTemplate(template, mergedParams, options);
+    const renderPromise = (async () => {
+      try {
+        if (this.config.beforeRender) {
+          await this.config.beforeRender(templateId, mergedParams);
+        }
 
-    await this.cacheManager.set(cacheKey, imageBuffer);
+        const imageBuffer = await renderTemplate(template, mergedParams, options);
 
-    // Step 6: Call afterRender hook if configured
-    if (this.config.afterRender) {
-      await this.config.afterRender(templateId, mergedParams, imageBuffer);
-    }
+        await this.cacheManager.set(cacheKey, imageBuffer);
 
-    // Step 7: Return the generated image buffer
-    return imageBuffer;
+        if (this.config.afterRender) {
+          await this.config.afterRender(templateId, mergedParams, imageBuffer);
+        }
+
+        return imageBuffer;
+      } finally {
+        this.renderInflight.delete(cacheKey);
+      }
+    })();
+
+    this.renderInflight.set(cacheKey, renderPromise);
+
+    return renderPromise;
   }
 }
 

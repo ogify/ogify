@@ -32,6 +32,12 @@ describe('Renderer Module', () => {
       delete invalid.renderer;
       expect(() => validateTemplate(invalid)).toThrow('Template must have a renderer function');
     });
+
+    it('should throw if fonts array is missing', () => {
+      const invalid = { ...mockTemplate } as any;
+      delete invalid.fonts;
+      expect(() => validateTemplate(invalid)).toThrow('Template must have a fonts array');
+    });
   });
 
   describe('defineTemplate', () => {
