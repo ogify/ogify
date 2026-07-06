@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-07-06
+
+### Added
+
+#### `@ogify/core`
+
+- **`htmlSnippet()` utility** — parse trusted inline HTML fragments into Satori-compatible flex word containers (workaround for [vercel/satori#484](https://github.com/vercel/satori/issues/484)). Supports `justify`, `gap`, and `fontSize` options. Invalid or disallowed HTML falls back to plain text.
+- **Unit tests** for `htmlSnippet`, `clsx`, `font-fetcher`, and `google-font-detector`.
+
+#### `@ogify/templates`
+
+- **Vitest test suite** for the basic template.
+
+### Changed
+
+#### `@ogify/core`
+
+- **`clsx`** — rewritten with full support for conditional objects, nested arrays, and numbers.
+- **Concurrent render deduplication** — duplicate in-flight renders for the same cache key share a single Promise.
+- **`renderTemplate`** — params function resolution removed (handled upstream in `TemplateRenderer`).
+
+#### `@ogify/templates`
+
+- **Basic template** — title and subtitle use `htmlSnippet` for inline HTML styling with proper layout/RTL alignment.
+
+### Fixed
+
+#### `@ogify/core`
+
+- **Template validation** — `validateTemplate` now requires a `fonts` array; templates are validated on registration.
+
+### Removed
+
+#### `@ogify/core`
+
+- **`objectToStyle`** — replaced by `htmlSnippet`.
+- **`rtl-css-js`** dependency.
+
+### Notes
+
+- `htmlSnippet` is for trusted template-author HTML only, not arbitrary end-user input.
+
+---
+
 ## [1.2.0] - 2026-05-13
 
 ### Added
