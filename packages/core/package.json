@@ -59,12 +59,12 @@
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
+    "@resvg/resvg-wasm": "^2.6.2",
     "lru-cache": "^11.3.6",
     "satori": "^0.26.0",
     "satori-html": "^0.3.2"
   },
   "devDependencies": {
-    "@resvg/resvg-wasm": "^2.6.2",
     "@types/node": "^20",
     "@types/react": "^18.3.12",
     "@vitest/ui": "^4.1.6",

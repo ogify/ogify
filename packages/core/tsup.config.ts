@@ -11,7 +11,17 @@ export default defineConfig({
   splitting: true,
   sourcemap: false,
   clean: true,
-  external: ['satori', 'satori-html', '@resvg/resvg-js', '@resvg/resvg-wasm', 'lru-cache', 'react'],
+  // Keep Resvg packages and the .wasm binary as external imports so consumer
+  // bundlers (Wrangler, Vite, webpack) can resolve / precompile them.
+  external: [
+    'satori',
+    'satori-html',
+    '@resvg/resvg-js',
+    '@resvg/resvg-wasm',
+    '@resvg/resvg-wasm/index_bg.wasm',
+    'lru-cache',
+    'react',
+  ],
   treeshake: true,
   target: 'es2022',
   platform: 'neutral',

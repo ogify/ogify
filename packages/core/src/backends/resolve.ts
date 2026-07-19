@@ -2,17 +2,18 @@
  * Resolves the Resvg backend to use for a render call.
  *
  * Priority:
- * 1. Explicit `resvg` passed by the caller
- * 2. {@link createAutoResvg} — Node → native, Edge/Workers → WASM
+ * 1. Explicit `resvg` from the caller (always wins)
+ * 2. Transparent auto-detection via {@link createAutoResvg}
  */
 
 import type { OgResvgBackend } from './types';
 import { createAutoResvg } from './auto';
 
 /**
- * Returns the backend to use, auto-selecting when none is provided.
+ * Returns the backend to use.
  *
- * @throws Error when no backend can be loaded for the current runtime
+ * Callers should normally omit `resvg` and let this auto-select.
+ * Pass an explicit backend only to override.
  */
 export async function resolveResvgBackend(
   explicit?: OgResvgBackend

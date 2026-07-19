@@ -1,12 +1,12 @@
 /**
- * Automatic Resvg backend selection.
+ * Automatic Resvg backend selection — transparent by default.
  *
- * Resolution order when `resvg` is omitted (or when calling {@link createAutoResvg}):
- * 1. Node.js / Vercel Serverless → `@resvg/resvg-js` via {@link createNodeResvg}
- * 2. Edge / Workers with `wasm` option → `@resvg/resvg-wasm` via {@link createWasmResvg}
- * 3. Edge / Workers without `wasm` → attempt to load `@resvg/resvg-wasm/index_bg.wasm`
- *    (works with bundlers that rewrite `.wasm` imports; Cloudflare often needs a
- *    *static* import in app code — pass `{ wasm }` in that case)
+ * When the caller omits `resvg`, {@link resolveResvgBackend} uses this helper:
+ * 1. Node.js / Vercel Serverless → `@resvg/resvg-js` (native)
+ * 2. Edge / Workers / unknown → `@resvg/resvg-wasm` with the package WASM asset
+ * 3. Optional `{ wasm }` override if the app already imported a custom module
+ *
+ * Explicit `resvg` on `createRenderer` / `renderTemplate` always wins.
  */
 
 import type { OgResvgBackend } from './types';
@@ -14,47 +14,23 @@ import type { OgWasmInput } from './wasm';
 import { detectRuntime } from './runtime';
 
 const NODE_BACKEND_HINT =
-  'For Node.js / Vercel Serverless: import { createNodeResvg } from "@ogify/core/node" and pass `resvg: createNodeResvg()`.';
+  'Install `@resvg/resvg-js` (bundled with `@ogify/core`) or pass `resvg: createNodeResvg()` from `@ogify/core/node`.';
 
 const WASM_BACKEND_HINT =
-  'For Cloudflare Workers / Vercel Edge: statically import the WASM module and pass it:\n' +
-  '  import resvgWasm from "@resvg/resvg-wasm/index_bg.wasm";\n' +
-  '  resvg: await createAutoResvg({ wasm: resvgWasm })\n' +
-  'or: resvg: await createWasmResvg(resvgWasm)';
+  'Install `@resvg/resvg-wasm` and ensure your bundler supports `.wasm` imports ' +
+  '(Wrangler / Cloudflare Vite plugin do). You can also pass an explicit backend: ' +
+  '`resvg: await createWasmResvg(wasmModule)` from `@ogify/core/wasm`.';
 
 export type CreateAutoResvgOptions = {
   /**
-   * WASM module / bytes for Edge and Workers.
-   *
-   * Prefer a statically imported module on Cloudflare Workers
-   * (`import wasm from '@resvg/resvg-wasm/index_bg.wasm'`).
+   * Optional WASM override. When omitted, core loads
+   * `@resvg/resvg-wasm/index_bg.wasm` automatically.
    */
   wasm?: OgWasmInput;
 };
 
 let cachedBackend: OgResvgBackend | null = null;
-let cachedWithExplicitWasm = false;
-
-/**
- * Tries to load the default WASM asset shipped by `@resvg/resvg-wasm`.
- *
- * Uses an indirect dynamic import so library bundlers do not fail at build time
- * when the consumer's bundler does not understand `.wasm` files.
- */
-async function importDefaultWasm(): Promise<OgWasmInput> {
-  const specifier = '@resvg/resvg-wasm/index_bg.wasm';
-  // Indirect import avoids static analysis failures in tsup / some TS setups.
-  const dynamicImport = new Function('s', 'return import(s)') as (
-    s: string
-  ) => Promise<{ default?: OgWasmInput } | OgWasmInput>;
-  const mod = await dynamicImport(specifier);
-
-  if (mod && typeof mod === 'object' && 'default' in mod && mod.default) {
-    return mod.default;
-  }
-
-  return mod as OgWasmInput;
-}
+let cacheKey: 'auto' | 'wasm-override' | null = null;
 
 async function loadNodeBackend(): Promise<OgResvgBackend> {
   const { createNodeResvg } = await import('./node');
@@ -67,73 +43,96 @@ async function loadWasmBackend(wasm: OgWasmInput): Promise<OgResvgBackend> {
 }
 
 /**
+ * Loads the default WASM binary shipped via `@resvg/resvg-wasm`.
+ *
+ * Uses a dedicated module with a **static** `.wasm` import so Cloudflare
+ * Workers / Wrangler can precompile it at deploy time.
+ */
+async function loadDefaultWasmAsset(): Promise<OgWasmInput> {
+  const { defaultWasm } = await import('./wasm-asset');
+  return defaultWasm;
+}
+
+/**
  * Creates a Resvg backend for the current runtime.
  *
- * @example Node — fully automatic
+ * Prefer omitting `resvg` on `createRenderer` — this is called automatically.
+ * Pass `{ wasm }` only when you need a custom WASM module.
+ *
+ * @example Transparent (recommended)
  * ```ts
+ * import { createRenderer } from '@ogify/core';
+ *
  * const renderer = createRenderer({
  *   templates: { ... },
- *   // resvg omitted → createAutoResvg() is used internally
+ *   cache: { type: 'memory' },
  * });
  * ```
  *
- * @example Cloudflare Workers — pass statically imported WASM once
+ * @example Explicit override
  * ```ts
- * import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm';
+ * import { createRenderer } from '@ogify/core';
+ * import { createNodeResvg } from '@ogify/core/node';
+ *
  * const renderer = createRenderer({
  *   templates: { ... },
- *   resvg: await createAutoResvg({ wasm: resvgWasm }),
+ *   resvg: createNodeResvg(),
  * });
  * ```
  */
 export async function createAutoResvg(
   options: CreateAutoResvgOptions = {}
 ): Promise<OgResvgBackend> {
-  // Reuse cached backend when no explicit wasm override is provided
-  if (cachedBackend && !options.wasm && !cachedWithExplicitWasm) {
+  if (cachedBackend && !options.wasm && cacheKey === 'auto') {
     return cachedBackend;
   }
 
   const runtime = detectRuntime();
 
-  if (runtime === 'node') {
-    try {
-      const backend = await loadNodeBackend();
-      if (!options.wasm) {
-        cachedBackend = backend;
-        cachedWithExplicitWasm = false;
-      }
-      return backend;
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-      // Unusual: Node without native bindings — try WASM if provided
-      if (options.wasm) {
-        return loadWasmBackend(options.wasm);
-      }
-      throw new Error(
-        `[@ogify/core] Failed to load the Node Resvg backend (@resvg/resvg-js).\n${NODE_BACKEND_HINT}\n${WASM_BACKEND_HINT}\nCause: ${detail}`
-      );
-    }
-  }
-
-  // Edge / unknown → WASM
+  // Explicit WASM from the caller
   if (options.wasm) {
     const backend = await loadWasmBackend(options.wasm);
     cachedBackend = backend;
-    cachedWithExplicitWasm = true;
+    cacheKey = 'wasm-override';
     return backend;
   }
 
+  // Node → native bindings
+  if (runtime === 'node') {
+    try {
+      const backend = await loadNodeBackend();
+      cachedBackend = backend;
+      cacheKey = 'auto';
+      return backend;
+    } catch (nodeError) {
+      // Fall through to WASM (e.g. unusual Node without native addons)
+      try {
+        const wasm = await loadDefaultWasmAsset();
+        const backend = await loadWasmBackend(wasm);
+        cachedBackend = backend;
+        cacheKey = 'auto';
+        return backend;
+      } catch (wasmError) {
+        const nodeDetail = nodeError instanceof Error ? nodeError.message : String(nodeError);
+        const wasmDetail = wasmError instanceof Error ? wasmError.message : String(wasmError);
+        throw new Error(
+          `[@ogify/core] Failed to auto-load a Resvg backend on Node.\n${NODE_BACKEND_HINT}\n${WASM_BACKEND_HINT}\nNode cause: ${nodeDetail}\nWASM cause: ${wasmDetail}`
+        );
+      }
+    }
+  }
+
+  // Edge / Workers / unknown → WASM asset from core
   try {
-    const wasm = await importDefaultWasm();
+    const wasm = await loadDefaultWasmAsset();
     const backend = await loadWasmBackend(wasm);
     cachedBackend = backend;
-    cachedWithExplicitWasm = false;
+    cacheKey = 'auto';
     return backend;
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `[@ogify/core] Automatic Resvg selection needs a WASM module on this runtime (${runtime}).\n${WASM_BACKEND_HINT}\nCause: ${detail}`
+      `[@ogify/core] Failed to auto-load the WASM Resvg backend on runtime "${runtime}".\n${WASM_BACKEND_HINT}\nCause: ${detail}`
     );
   }
 }
@@ -143,5 +142,5 @@ export async function createAutoResvg(
  */
 export function resetAutoResvgCache(): void {
   cachedBackend = null;
-  cachedWithExplicitWasm = false;
+  cacheKey = null;
 }

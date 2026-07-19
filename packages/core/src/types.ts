@@ -148,11 +148,15 @@ export type OgTemplateOptions = {
   emojiProvider?: OgEmojiProvider;
 
   /**
-   * SVG → PNG backend. Required on Cloudflare Workers / Vercel Edge.
-   * On Node.js, defaults to `@resvg/resvg-js` when omitted.
+   * Optional Resvg backend override.
+   *
+   * When omitted, `@ogify/core` auto-detects the runtime and loads
+   * `@resvg/resvg-js` (Node) or `@resvg/resvg-wasm` (Edge / Workers).
+   * Pass a backend only when you need to override that default.
    *
    * @see createNodeResvg from `@ogify/core/node`
    * @see createWasmResvg from `@ogify/core/wasm`
+   * @see createAutoResvg from `@ogify/core`
    */
   resvg?: OgResvgBackend;
 
@@ -284,10 +288,10 @@ export type OgTemplateRenderer<
   cache?: OgCacheConfig;
 
   /**
-   * Default Resvg backend for all renders from this renderer.
+   * Optional Resvg backend override for all renders from this renderer.
    *
+   * When omitted, the runtime is auto-detected (Node → native, Edge → WASM).
    * Per-call `options.resvg` overrides this value.
-   * On Node.js, `@resvg/resvg-js` is used when both are omitted.
    */
   resvg?: OgResvgBackend;
 

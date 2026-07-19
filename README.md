@@ -43,35 +43,33 @@ Built on top of:
 
 ## Platform support
 
-| Runtime | Automatic? | Notes |
-|---|---|---|
-| Node.js / Vercel Serverless | Yes | Omit `resvg` — uses `@resvg/resvg-js` |
-| Cloudflare Workers / Pages | Partial | Pass statically imported WASM once (platform blocks dynamic WASM compile) |
-| Vercel Edge | Partial | Same as Workers — pass WASM, or rely on bundler `.wasm` import |
+Transparent by default: omit `resvg` and `@ogify/core` detects the runtime and loads the right backend. Pass `resvg` only to override.
 
-**Node (fully automatic):**
+| Runtime | Auto backend | Override (optional) |
+|---|---|---|
+| Node.js / Vercel Serverless | `@resvg/resvg-js` | `createNodeResvg()` from `@ogify/core/node` |
+| Cloudflare Workers / Pages | `@resvg/resvg-wasm` (+ package `.wasm` asset) | `createWasmResvg(wasm)` from `@ogify/core/wasm` |
+| Vercel Edge | `@resvg/resvg-wasm` (+ package `.wasm` asset) | same as Workers |
 
 ```ts
 import { createRenderer } from '@ogify/core';
 
+// Works on Node, Cloudflare Workers, and Vercel Edge — no resvg wiring needed
 const renderer = createRenderer({
   templates: { /* ... */ },
   cache: { type: 'memory' },
-  // resvg omitted → auto-selects createNodeResvg()
 });
 ```
-
-**Cloudflare Workers / Vercel Edge (one-line WASM handoff):**
 
 ```ts
-import { createRenderer, createAutoResvg } from '@ogify/core';
-import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm';
+// Optional explicit override
+import { createRenderer } from '@ogify/core';
+import { createNodeResvg } from '@ogify/core/node';
 
 const renderer = createRenderer({
   templates: { /* ... */ },
-  resvg: await createAutoResvg({ wasm: resvgWasm }),
-  cache: { type: 'memory' },
+  resvg: createNodeResvg(),
 });
 ```
 
-You can still wire backends manually via `@ogify/core/node` and `@ogify/core/wasm` if you prefer.
+On Cloudflare Workers, your bundler must support `.wasm` imports from dependencies (Wrangler does). Use `cache: { type: 'memory' }` on Workers / Edge (`filesystem` is Node-only).

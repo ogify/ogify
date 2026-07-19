@@ -12,11 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### `@ogify/core`
 
 - **Cross-platform Resvg backends** — pluggable SVG → PNG rasterization:
-  - `@ogify/core/node` → `createNodeResvg()` using `@resvg/resvg-js` (Node.js / Vercel Serverless)
-  - `@ogify/core/wasm` → `createWasmResvg(wasm)` using `@resvg/resvg-wasm` (Cloudflare Workers / Vercel Edge)
-  - **`createAutoResvg()`** — runtime detection (Node → native, Edge/Workers → WASM)
-- **`resvg` option** on `createRenderer` / `renderTemplate` / `OgTemplateOptions` to inject a backend
-- Automatic selection when `resvg` is omitted (`createAutoResvg()` under the hood)
+  - **Transparent auto-detect** — omit `resvg` and core loads `@resvg/resvg-js` (Node) or `@resvg/resvg-wasm` (Edge / Workers), including the package `.wasm` asset
+  - Explicit `resvg` always overrides the default
+  - `@ogify/core/node` → `createNodeResvg()` and `@ogify/core/wasm` → `createWasmResvg(wasm)` for manual wiring
+  - **`createAutoResvg()`** — same auto logic, available if you need the backend handle directly
+- **`resvg` option** on `createRenderer` / `renderTemplate` / `OgTemplateOptions` (optional override)
 
 ### Changed
 
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Notes
 
-- On Cloudflare Workers, pass a *statically imported* WASM module to `createWasmResvg` — runtime `fetch` + `WebAssembly.instantiate` is blocked.
+- On Cloudflare Workers, core statically imports `@resvg/resvg-wasm/index_bg.wasm` so Wrangler can precompile it — no app-level WASM import required for the default path.
 - Use `cache: { type: 'memory' }` on Workers / Edge (`filesystem` requires Node.js).
 
 ---
