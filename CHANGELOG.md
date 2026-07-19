@@ -14,8 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Cross-platform Resvg backends** — pluggable SVG → PNG rasterization:
   - `@ogify/core/node` → `createNodeResvg()` using `@resvg/resvg-js` (Node.js / Vercel Serverless)
   - `@ogify/core/wasm` → `createWasmResvg(wasm)` using `@resvg/resvg-wasm` (Cloudflare Workers / Vercel Edge)
+  - **`createAutoResvg()`** — runtime detection (Node → native, Edge/Workers → WASM)
 - **`resvg` option** on `createRenderer` / `renderTemplate` / `OgTemplateOptions` to inject a backend
-- Automatic Node fallback when `resvg` is omitted on Node.js runtimes
+- Automatic selection when `resvg` is omitted (`createAutoResvg()` under the hood)
 
 ### Changed
 

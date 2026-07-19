@@ -3,31 +3,16 @@
  *
  * Priority:
  * 1. Explicit `resvg` passed by the caller
- * 2. Lazy Node.js default (`@resvg/resvg-js`) when running on Node
- *
- * Edge / Workers must always pass an explicit backend from `@ogify/core/wasm`.
+ * 2. {@link createAutoResvg} — Node → native, Edge/Workers → WASM
  */
 
 import type { OgResvgBackend } from './types';
-
-const NODE_BACKEND_HINT =
-  'For Node.js / Vercel Serverless: import { createNodeResvg } from "@ogify/core/node" and pass `resvg: createNodeResvg()`.';
-
-const WASM_BACKEND_HINT =
-  'For Cloudflare Workers / Vercel Edge: import { createWasmResvg } from "@ogify/core/wasm" and pass `resvg: await createWasmResvg(wasmModule)`.';
-
-function isNodeRuntime(): boolean {
-  return (
-    typeof process !== 'undefined' &&
-    typeof process.versions === 'object' &&
-    typeof process.versions?.node === 'string'
-  );
-}
+import { createAutoResvg } from './auto';
 
 /**
- * Returns the backend to use, falling back to the Node native backend when possible.
+ * Returns the backend to use, auto-selecting when none is provided.
  *
- * @throws Error when no backend is provided and Node bindings cannot be loaded
+ * @throws Error when no backend can be loaded for the current runtime
  */
 export async function resolveResvgBackend(
   explicit?: OgResvgBackend
@@ -36,19 +21,5 @@ export async function resolveResvgBackend(
     return explicit;
   }
 
-  if (!isNodeRuntime()) {
-    throw new Error(
-      `[@ogify/core] No Resvg backend configured for this runtime.\n${WASM_BACKEND_HINT}\n${NODE_BACKEND_HINT}`
-    );
-  }
-
-  try {
-    const { createNodeResvg } = await import('./node');
-    return createNodeResvg();
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `[@ogify/core] Failed to load the Node Resvg backend (@resvg/resvg-js).\n${NODE_BACKEND_HINT}\n${WASM_BACKEND_HINT}\nCause: ${detail}`
-    );
-  }
+  return createAutoResvg();
 }

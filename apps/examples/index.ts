@@ -1,5 +1,4 @@
 import { createRenderer, type OgFontConfig } from '@ogify/core';
-import { createNodeResvg } from '@ogify/core/node';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
@@ -119,7 +118,7 @@ const handler = createRenderer<{ basic: TemplateParams }>({
   templates: { basic: template },
   cache: { type: 'memory' },
   sharedParams: {},
-  resvg: createNodeResvg(),
+  // resvg omitted — auto-selects Node backend via createAutoResvg()
 });
 
 const FONT_OPTIONS: OgFontConfig[] = [

@@ -23,3 +23,9 @@ export * from './utils/html-snippet';
 
 // Type definitions: OgTemplate, OgTemplateParams, OgFontConfig, OgTemplateRenderer, etc.
 export * from './types';
+
+// Automatic Resvg backend selection (Node → native, Edge → WASM)
+export { createAutoResvg } from './backends/auto';
+export type { CreateAutoResvgOptions } from './backends/auto';
+export { detectRuntime, isNodeRuntime, isEdgeRuntime } from './backends/runtime';
+export type { OgRuntimeKind } from './backends/runtime';

@@ -1,9 +1,36 @@
 /**
- * Unit tests for cross-platform Resvg backend resolution.
+ * Unit tests for cross-platform Resvg backend resolution and auto-selection.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { OgResvgBackend } from '../src/backends/types';
+
+describe('detectRuntime', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('detects Cloudflare Workers via navigator.userAgent', async () => {
+    vi.stubGlobal('navigator', { userAgent: 'Cloudflare-Workers' });
+    const { detectRuntime } = await import('../src/backends/runtime');
+    expect(detectRuntime()).toBe('edge');
+  });
+
+  it('detects Vercel Edge via EdgeRuntime', async () => {
+    vi.stubGlobal('navigator', undefined);
+    vi.stubGlobal('EdgeRuntime', 'edge-runtime');
+    // Also clear node-like process for this assertion path when EdgeRuntime is set
+    const { detectRuntime } = await import('../src/backends/runtime');
+    expect(detectRuntime()).toBe('edge');
+  });
+
+  it('detects Node via process.versions.node', async () => {
+    vi.stubGlobal('navigator', undefined);
+    vi.stubGlobal('EdgeRuntime', undefined);
+    const { detectRuntime } = await import('../src/backends/runtime');
+    expect(detectRuntime()).toBe('node');
+  });
+});
 
 describe('resolveResvgBackend', () => {
   beforeEach(() => {
@@ -13,6 +40,7 @@ describe('resolveResvgBackend', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.doUnmock('../src/backends/node');
+    vi.doUnmock('../src/backends/auto');
   });
 
   it('returns the explicit backend when provided', async () => {
@@ -37,19 +65,40 @@ describe('resolveResvgBackend', () => {
     await expect(resolveResvgBackend()).resolves.toBe(nodeBackend);
   });
 
-  it('throws a helpful error when no backend is set outside Node', async () => {
-    const originalProcess = globalThis.process;
-    // Simulate a Worker-like environment without process.versions.node
-    vi.stubGlobal('process', { ...originalProcess, versions: {} });
+  it('auto-selects WASM on edge when wasm is provided via createAutoResvg', async () => {
+    vi.stubGlobal('navigator', { userAgent: 'Cloudflare-Workers' });
 
-    const { resolveResvgBackend } = await import('../src/backends/resolve');
+    const wasmBackend: OgResvgBackend = {
+      render: vi.fn().mockResolvedValue(new Uint8Array([5])),
+    };
 
-    await expect(resolveResvgBackend()).rejects.toThrow(/No Resvg backend configured/);
-    await expect(resolveResvgBackend()).rejects.toThrow(/@ogify\/core\/wasm/);
+    vi.doMock('../src/backends/wasm', () => ({
+      createWasmResvg: vi.fn().mockResolvedValue(wasmBackend),
+    }));
+
+    const { createAutoResvg, resetAutoResvgCache } = await import('../src/backends/auto');
+    resetAutoResvgCache();
+
+    const fakeWasm = {} as WebAssembly.Module;
+    await expect(createAutoResvg({ wasm: fakeWasm })).resolves.toBe(wasmBackend);
+  });
+
+  it('throws a helpful error on edge when WASM cannot be loaded', async () => {
+    vi.stubGlobal('navigator', { userAgent: 'Cloudflare-Workers' });
+
+    const { createAutoResvg, resetAutoResvgCache } = await import('../src/backends/auto');
+    resetAutoResvgCache();
+
+    await expect(createAutoResvg()).rejects.toThrow(/Automatic Resvg selection needs a WASM module/);
+    await expect(createAutoResvg()).rejects.toThrow(/index_bg\.wasm/);
   });
 });
 
 describe('createNodeResvg', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
   it('delegates to @resvg/resvg-js renderAsync', async () => {
     const asPng = vi.fn().mockReturnValue(new Uint8Array([7, 8]));
     const renderAsync = vi.fn().mockResolvedValue({ asPng });
