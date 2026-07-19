@@ -109,12 +109,15 @@ export const apis: Record<OgEmojiProvider, string | ((code: string) => string)> 
 };
 
 /**
- * Cache for storing emoji data URIs to avoid redundant network requests.
+ * Cache for emoji data URIs (UTF-8 bytes of the data URI string).
  * Key format: "{provider}:{codePoint}" (e.g., "twemoji:1f600")
  */
 const cache = new CacheManager({
   type: 'memory',
 });
+
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 
 /**
  * Loads an emoji SVG from a CDN provider and converts it to a base64 data URI.
@@ -143,7 +146,7 @@ export async function loadEmoji(type: OgEmojiProvider, text: string): Promise<st
   // Return cached result if available
   const cached = await cache.get(cacheKey);
   if (cached) {
-    return cached.toString();
+    return textDecoder.decode(cached);
   }
 
   // Fallback to 'noto' if provider is invalid or not specified
@@ -162,12 +165,11 @@ export async function loadEmoji(type: OgEmojiProvider, text: string): Promise<st
       : `${baseUrl}${code.toUpperCase()}.svg`; // String APIs need the filename appended
 
   // Fetch the SVG content and convert to base64 data URI
-  const emojiPromise = fetch(fullUrl)
+  const dataUri = await fetch(fullUrl)
     .then((response) => response.text())
     .then((svgContent) => `data:image/svg+xml;base64,${btoa(svgContent)}`);
 
-  // Cache the promise to prevent duplicate requests
-  await cache.set(cacheKey, Buffer.from(await emojiPromise));
+  await cache.set(cacheKey, textEncoder.encode(dataUri));
 
-  return emojiPromise;
+  return dataUri;
 }

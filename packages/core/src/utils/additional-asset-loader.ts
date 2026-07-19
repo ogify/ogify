@@ -12,6 +12,7 @@
 import type { SatoriOptions } from 'satori';
 
 import type { OgFontConfig, OgEmojiProvider } from '../types';
+import { toArrayBuffer } from './binary';
 import { GoogleFontDetector } from './google-font-detector';
 import { loadEmoji } from './emoji-loader';
 import { loadFontFromUrl } from './font-fetcher';
@@ -126,7 +127,7 @@ export const loadAdditionalAsset = async (
           name: `${fontConfig.name}-Fallback-${index}`,
 
           // The downloaded font binary data
-          data: fontData,
+          data: toArrayBuffer(fontData),
 
           // Inherit style from the original font config (default: 'normal')
           style: fontConfig.style || 'normal',

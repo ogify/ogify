@@ -6,15 +6,15 @@
  *
  * The rendering process uses:
  * - Satori: Converts HTML/CSS to SVG
- * - Resvg: Converts SVG to PNG with high quality
+ * - Resvg backend: Converts SVG to PNG (native Node or WASM on Edge/Workers)
  */
 
 import satori from 'satori';
 import type { ReactNode } from 'react';
 import { type SatoriOptions } from 'satori';
-import { renderAsync } from '@resvg/resvg-js';
 import { html } from 'satori-html';
 
+import { resolveResvgBackend } from './backends/resolve';
 import type { OgTemplate, OgTemplateOptions, OgTemplateParams } from './types';
 import { loadAdditionalAsset } from './utils/additional-asset-loader';
 import { loadFonts } from './utils/font-loader';
@@ -35,7 +35,7 @@ const DEFAULT_WIDTH = 1200;
 const DEFAULT_HEIGHT = 630;
 
 /**
- * Renders an OG template to a PNG image buffer.
+ * Renders an OG template to a PNG image byte array.
  *
  * **Rendering Pipeline:**
  *
@@ -43,7 +43,11 @@ const DEFAULT_HEIGHT = 630;
  * 2. **Markup generation**: Execute the template's renderer (HTML string or React node tree)
  * 3. **Element tree**: If string, parse with satori-html; otherwise use the returned node tree
  * 4. **SVG Rendering**: Render element tree to SVG using Satori (at original dimensions)
- * 5. **PNG Conversion**: Rasterize SVG using Resvg at (width × scale) for supersampling
+ * 5. **PNG Conversion**: Rasterize SVG via the configured Resvg backend at (width × scale)
+ *
+ * **Platform backends:**
+ * - Node.js / Vercel Serverless: `createNodeResvg()` from `@ogify/core/node` (default on Node)
+ * - Cloudflare Workers / Vercel Edge: `createWasmResvg(wasm)` from `@ogify/core/wasm`
  *
  * **Scale / Supersampling:**
  * When `scale > 1`, Resvg rasterizes the vector SVG at a higher resolution
@@ -54,24 +58,20 @@ const DEFAULT_HEIGHT = 630;
  * @param template - The template definition to render
  * @param params - Dynamic parameters to populate the template
  * @param options - Optional rendering options
- * @param options.width - Custom image width in pixels (default: 1200)
- * @param options.height - Custom image height in pixels (default: 630)
- * @param options.scale - Render scale factor for supersampling (default: 1).
- *   Supports floats (e.g. 1.25, 1.5, 2). Output PNG will be
- *   `(width × scale) × (height × scale)` pixels. Clamped to [1, 4].
- * @returns Promise resolving to a PNG image buffer
+ * @returns Promise resolving to PNG bytes (`Uint8Array`)
  *
  * @throws Will throw if:
  *   - Font loading fails
  *   - HTML generation fails
  *   - SVG rendering fails
  *   - PNG conversion fails
+ *   - No Resvg backend is available for the current runtime
  */
 export async function renderTemplate<TParams = OgTemplateParams>(
   template: OgTemplate<TParams>,
   params: TParams,
   options?: OgTemplateOptions
-): Promise<Buffer> {
+): Promise<Uint8Array> {
   const width = options?.width || DEFAULT_WIDTH;
   const height = options?.height || DEFAULT_HEIGHT;
   const fonts = options?.fonts?.length ? options.fonts : template.fonts;
@@ -82,6 +82,8 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   // final pixel value in fitTo to avoid sub-pixel Resvg dimensions.
   // undefined/null fall back to 1 (default, no supersampling).
   const scale = Math.max(1, Math.min(4, options?.scale ?? 1));
+
+  const resvg = await resolveResvgBackend(options?.resvg);
 
   // Step 1: Load all fonts specified in the template
   // Fonts are loaded in parallel for optimal performance
@@ -140,7 +142,7 @@ export async function renderTemplate<TParams = OgTemplateParams>(
     },
   });
 
-  // Step 5: Rasterize the SVG to PNG using Resvg at scaled resolution.
+  // Step 5: Rasterize the SVG to PNG using the platform Resvg backend.
   //
   // Since the SVG is a vector format, Resvg can rasterize it at ANY resolution
   // with full quality. When scale > 1, fitTo upscales the output to
@@ -152,7 +154,7 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   //   scale=1.5  → 1800×945
   //   scale=2    → 2400×1260  (@2x retina)
   //   scale=3    → 3600×1890  (@3x ultra)
-  const pngData = await renderAsync(svg, {
+  return resvg.render(svg, {
     fitTo: {
       mode: 'width',
       // Math.round ensures integer pixel value (Resvg requires integer dimensions).
@@ -160,8 +162,4 @@ export async function renderTemplate<TParams = OgTemplateParams>(
       value: Math.round(width * scale),
     },
   });
-
-  // Step 6: Convert Uint8Array to Node.js Buffer for compatibility
-  // Buffer is more widely supported in Node.js ecosystems
-  return pngData.asPng();
 }

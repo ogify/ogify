@@ -8,9 +8,13 @@ import type { ReactNode } from 'react';
  * - Template definition and parameters
  * - Template handler configuration
  * - Emoji providers
+ * - Cross-platform Resvg backends
  */
 
 import type { FontStyle, FontWeight } from 'satori';
+import type { OgResvgBackend } from './backends/types';
+
+export type { OgResvgBackend, OgResvgFitTo, OgResvgRenderOptions } from './backends/types';
 
 /**
  * Supported emoji providers for rendering emoji characters in OG images.
@@ -32,27 +36,31 @@ export type OgEmojiProvider =
   | 'openmoji';
 
 /**
- * Cache configuration for fonts and icons.
+ * Cache configuration for fonts, icons, and rendered images.
  *
  * Supports two caching strategies:
- * - Memory: Fast in-memory cache with LRU eviction
- * - Filesystem: Persistent cache stored on disk
+ * - Memory: Fast in-memory LRU cache (Node, Cloudflare Workers, Vercel Edge)
+ * - Filesystem: Persistent disk cache (**Node.js only** — not available on Workers/Edge)
  */
 export type OgCacheConfig =
   | {
-      /** Memory-based caching strategy */
+      /** Memory-based caching strategy (cross-platform) */
       type: 'memory';
-      /** Time-to-live in milliseconds (default: 3600000 = 1 hour) */
+      /** Time-to-live in milliseconds (default: 7 days) */
       ttl?: number;
       /** Maximum number of items to cache (default: 100) */
       max?: number;
     }
   | {
-      /** Filesystem-based caching strategy */
+      /**
+       * Filesystem-based caching strategy.
+       *
+       * Only supported on Node.js. On Cloudflare Workers / Vercel Edge use `{ type: 'memory' }`.
+       */
       type: 'filesystem';
       /** Directory to store cache files (default: '.ogify-cache') */
       dir?: string;
-      /** Time-to-live in milliseconds (default: 3600000 = 1 hour) */
+      /** Time-to-live in milliseconds (default: 7 days) */
       ttl?: number;
       /** Maximum number of items to cache (default: 100) */
       max?: number;
@@ -111,8 +119,8 @@ export type OgFontConfig = {
   /** URL to the font file (for custom/self-hosted fonts) */
   url?: string;
 
-  /** Pre-loaded font binary data (ArrayBuffer or Buffer) */
-  data?: Buffer | ArrayBuffer;
+  /** Pre-loaded font binary data (ArrayBuffer, Uint8Array, or Node Buffer) */
+  data?: ArrayBuffer | Uint8Array;
 
   /** Font file format (default: 'woff') */
   format?: OgFontFormat;
@@ -138,6 +146,15 @@ export type OgTemplateOptions = {
 
   /** Optional emoji provider to use in this template */
   emojiProvider?: OgEmojiProvider;
+
+  /**
+   * SVG → PNG backend. Required on Cloudflare Workers / Vercel Edge.
+   * On Node.js, defaults to `@resvg/resvg-js` when omitted.
+   *
+   * @see createNodeResvg from `@ogify/core/node`
+   * @see createWasmResvg from `@ogify/core/wasm`
+   */
+  resvg?: OgResvgBackend;
 
   /** Optional custom width in pixels (default: 1200) */
   width?: number;
@@ -254,16 +271,25 @@ export type OgTemplateRenderer<
   sharedParams?: Partial<TMap[keyof TMap]> | (() => Promise<Partial<TMap[keyof TMap]>>);
 
   /**
-   * Cache configuration for fonts and icons.
+   * Cache configuration for rendered images.
    *
    * When provided, enables LRU caching to improve performance by:
-   * - Reducing redundant network requests for fonts and emojis
-   * - Supporting memory or filesystem-based caching strategies
+   * - Reducing redundant renders for identical inputs
+   * - Supporting memory (cross-platform) or filesystem (Node-only) strategies
    * - Configurable TTL and maximum cache size
    *
-   * If not provided, falls back to simple in-memory caching.
+   * If not provided, falls back to in-memory caching.
+   * On Cloudflare Workers / Vercel Edge, use `{ type: 'memory' }` only.
    */
   cache?: OgCacheConfig;
+
+  /**
+   * Default Resvg backend for all renders from this renderer.
+   *
+   * Per-call `options.resvg` overrides this value.
+   * On Node.js, `@resvg/resvg-js` is used when both are omitted.
+   */
+  resvg?: OgResvgBackend;
 
   /**
    * Hook called before rendering.
@@ -288,6 +314,6 @@ export type OgTemplateRenderer<
   afterRender?: (
     templateId: keyof TMap,
     params: TMap[keyof TMap],
-    imageBuffer: Buffer
+    image: Uint8Array
   ) => void | Promise<void>;
 };

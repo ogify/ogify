@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+#### `@ogify/core`
+
+- **Cross-platform Resvg backends** — pluggable SVG → PNG rasterization:
+  - `@ogify/core/node` → `createNodeResvg()` using `@resvg/resvg-js` (Node.js / Vercel Serverless)
+  - `@ogify/core/wasm` → `createWasmResvg(wasm)` using `@resvg/resvg-wasm` (Cloudflare Workers / Vercel Edge)
+- **`resvg` option** on `createRenderer` / `renderTemplate` / `OgTemplateOptions` to inject a backend
+- Automatic Node fallback when `resvg` is omitted on Node.js runtimes
+
+### Changed
+
+#### `@ogify/core`
+
+- **PNG output type** is now `Uint8Array` (compatible with Node `Buffer` and Edge/Workers `Response`)
+- **Cache keys** use Web Crypto SHA-256 instead of Node `crypto` (works on Workers / Edge)
+- **Filesystem cache** is loaded via dynamic `node:fs` import and clearly Node-only
+- **`@resvg/resvg-js`** is no longer imported from the main entry; use `@ogify/core/node` or rely on the Node default
+
+### Notes
+
+- On Cloudflare Workers, pass a *statically imported* WASM module to `createWasmResvg` — runtime `fetch` + `WebAssembly.instantiate` is blocked.
+- Use `cache: { type: 'memory' }` on Workers / Edge (`filesystem` requires Node.js).
+
+---
+
 ## [1.3.0] - 2026-07-06
 
 ### Added

@@ -10,6 +10,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.mjs",
+      "require": "./dist/node.js"
+    },
+    "./wasm": {
+      "types": "./dist/wasm.d.ts",
+      "import": "./dist/wasm.mjs",
+      "require": "./dist/wasm.js"
     }
   },
   "files": [
@@ -32,9 +42,17 @@
   },
   "license": "MIT",
   "peerDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@resvg/resvg-wasm": "^2.6.2",
     "react": ">=18"
   },
   "peerDependenciesMeta": {
+    "@resvg/resvg-js": {
+      "optional": true
+    },
+    "@resvg/resvg-wasm": {
+      "optional": true
+    },
     "react": {
       "optional": true
     }
@@ -46,6 +64,7 @@
     "satori-html": "^0.3.2"
   },
   "devDependencies": {
+    "@resvg/resvg-wasm": "^2.6.2",
     "@types/node": "^20",
     "@types/react": "^18.3.12",
     "@vitest/ui": "^4.1.6",
@@ -53,5 +72,14 @@
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
-  }
+  },
+  "keywords": [
+    "og-image",
+    "open-graph",
+    "satori",
+    "resvg",
+    "cloudflare-workers",
+    "vercel-edge",
+    "nextjs"
+  ]
 }

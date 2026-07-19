@@ -1,4 +1,5 @@
 import { createRenderer, type OgFontConfig } from '@ogify/core';
+import { createNodeResvg } from '@ogify/core/node';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
@@ -118,6 +119,7 @@ const handler = createRenderer<{ basic: TemplateParams }>({
   templates: { basic: template },
   cache: { type: 'memory' },
   sharedParams: {},
+  resvg: createNodeResvg(),
 });
 
 const FONT_OPTIONS: OgFontConfig[] = [
@@ -131,7 +133,7 @@ function subtitleMode(subtitle?: string): 'none' | 'plain' | 'html' {
   return 'html';
 }
 
-async function writeOutput(relativePath: string, buffer: Buffer): Promise<void> {
+async function writeOutput(relativePath: string, buffer: Uint8Array): Promise<void> {
   const fullPath = join('outputs', relativePath);
   await mkdir(dirname(fullPath), { recursive: true });
   await writeFile(fullPath, buffer);

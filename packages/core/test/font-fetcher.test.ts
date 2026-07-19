@@ -6,7 +6,7 @@ describe('loadFontFromUrl', () => {
     vi.restoreAllMocks();
   });
 
-  it('should fetch font data and return a buffer', async () => {
+  it('should fetch font data and return a Uint8Array', async () => {
     const url = 'https://fonts.gstatic.com/s/inter/v13/font-fetch.woff2';
     const data = Uint8Array.from([1, 2, 3]).buffer;
 
@@ -20,8 +20,8 @@ describe('loadFontFromUrl', () => {
 
     const buffer = await loadFontFromUrl(url);
 
-    expect(Buffer.isBuffer(buffer)).toBe(true);
-    expect(buffer.equals(Buffer.from(data))).toBe(true);
+    expect(buffer).toBeInstanceOf(Uint8Array);
+    expect(Array.from(buffer)).toEqual([1, 2, 3]);
   });
 
   it('should return cached font on subsequent requests', async () => {
@@ -38,6 +38,6 @@ describe('loadFontFromUrl', () => {
     const second = await loadFontFromUrl(url);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(second.equals(first)).toBe(true);
+    expect(Array.from(second)).toEqual(Array.from(first));
   });
 });

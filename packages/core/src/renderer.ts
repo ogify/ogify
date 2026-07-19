@@ -85,10 +85,10 @@ export class TemplateRenderer<
   private config: OgTemplateRenderer<TMap>;
 
   /** Cache manager for rendered images */
-  private cacheManager: CacheManager<string, Buffer>;
+  private cacheManager: CacheManager<string, Uint8Array>;
 
   /** In-flight renders keyed by cache key to avoid duplicate work */
-  private renderInflight = new Map<string, Promise<Buffer>>();
+  private renderInflight = new Map<string, Promise<Uint8Array>>();
 
   /**
    * Internal registry mapping template IDs to template definitions.
@@ -180,7 +180,7 @@ export class TemplateRenderer<
     templateId: K,
     params: TMap[K] | (() => Promise<TMap[K]>),
     options?: OgTemplateOptions
-  ): Promise<Buffer> {
+  ): Promise<Uint8Array> {
     const { sharedParams } = this.config;
     // Step 1: Look up the template in the registry
     const template = this.getTemplate(templateId);
@@ -196,10 +196,17 @@ export class TemplateRenderer<
       ...(typeof params === 'function' ? await params() : params || {}),
     };
 
-    const cacheKey = this.cacheManager.generateKey({
+    const renderOptions: OgTemplateOptions = {
+      ...options,
+      resvg: options?.resvg ?? this.config.resvg,
+    };
+
+    const cacheKey = await this.cacheManager.generateKey({
       templateId,
       ...mergedParams,
-      ...options,
+      ...renderOptions,
+      // Avoid putting the backend object into the cache key
+      resvg: undefined,
     });
 
     const cached = await this.cacheManager.get(cacheKey);
@@ -218,15 +225,15 @@ export class TemplateRenderer<
           await this.config.beforeRender(templateId, mergedParams);
         }
 
-        const imageBuffer = await renderTemplate(template, mergedParams, options);
+        const image = await renderTemplate(template, mergedParams, renderOptions);
 
-        await this.cacheManager.set(cacheKey, imageBuffer);
+        await this.cacheManager.set(cacheKey, image);
 
         if (this.config.afterRender) {
-          await this.config.afterRender(templateId, mergedParams, imageBuffer);
+          await this.config.afterRender(templateId, mergedParams, image);
         }
 
-        return imageBuffer;
+        return image;
       } finally {
         this.renderInflight.delete(cacheKey);
       }

@@ -37,5 +37,40 @@ Built on top of:
 
 - [satori](https://github.com/vercel/satori) - SVG generation
 - [satori-html](https://github.com/vercel/satori-html) - HTML to VDOM conversion
-- [@resvg/resvg-js](https://github.com/thx/resvg-js) - SVG to PNG conversion
+- [@resvg/resvg-js](https://github.com/thx/resvg-js) - SVG to PNG (Node.js / Vercel Serverless)
+- [@resvg/resvg-wasm](https://github.com/thx/resvg-js) - SVG to PNG (Cloudflare Workers / Vercel Edge)
 - [lru-cache](https://github.com/isaacs/node-lru-cache) - LRU cache
+
+## Platform support
+
+| Runtime | Backend import | Notes |
+|---|---|---|
+| Node.js / Vercel Serverless | `@ogify/core/node` → `createNodeResvg()` | Default when `resvg` is omitted on Node |
+| Cloudflare Workers / Pages | `@ogify/core/wasm` → `createWasmResvg(wasm)` | Statically import the `.wasm` module |
+| Vercel Edge | `@ogify/core/wasm` → `createWasmResvg(wasm)` | Use memory cache only |
+
+```ts
+// Node.js / Vercel Serverless
+import { createRenderer } from '@ogify/core';
+import { createNodeResvg } from '@ogify/core/node';
+
+const renderer = createRenderer({
+  templates: { /* ... */ },
+  resvg: createNodeResvg(),
+  cache: { type: 'memory' }, // or { type: 'filesystem' } on Node only
+});
+```
+
+```ts
+// Cloudflare Workers / Vercel Edge
+import { createRenderer } from '@ogify/core';
+import { createWasmResvg } from '@ogify/core/wasm';
+import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm';
+
+const resvg = await createWasmResvg(resvgWasm);
+const renderer = createRenderer({
+  templates: { /* ... */ },
+  resvg,
+  cache: { type: 'memory' },
+});
+```

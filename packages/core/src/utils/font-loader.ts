@@ -2,7 +2,7 @@
  * Font loading utilities for OG image generation.
  *
  * This module provides functions to load fonts from various sources:
- * 1. Pre-loaded binary data (Buffer/ArrayBuffer)
+ * 1. Pre-loaded binary data (Uint8Array / ArrayBuffer)
  * 2. Remote URLs (custom font files)
  * 3. Google Fonts API (automatic detection and loading)
  */
@@ -10,6 +10,7 @@
 import type { Font } from 'satori';
 
 import type { OgFontConfig } from '../types';
+import { toArrayBuffer } from './binary';
 import { GoogleFontDetector } from './google-font-detector';
 import { loadFontFromUrl } from './font-fetcher';
 
@@ -53,7 +54,7 @@ export const loadFont = async (font: OgFontConfig): Promise<Font | null> => {
   if (font.data) {
     return {
       name: font.name,
-      data: font.data,
+      data: toArrayBuffer(font.data),
       style: font.style || 'normal',
       weight: font.weight || 400,
     };
@@ -65,7 +66,7 @@ export const loadFont = async (font: OgFontConfig): Promise<Font | null> => {
     const buffer = await loadFontFromUrl(font.url);
     return {
       name: font.name,
-      data: Buffer.from(buffer),
+      data: toArrayBuffer(buffer),
       style: font.style || 'normal',
       weight: font.weight || 400,
     };
@@ -85,7 +86,7 @@ export const loadFont = async (font: OgFontConfig): Promise<Font | null> => {
   // Load the first detected font variant (usually the base Latin subset)
   return {
     name: font.name,
-    data: await loadFontFromUrl(detectedFonts[0]),
+    data: toArrayBuffer(await loadFontFromUrl(detectedFonts[0])),
     style: font.style || 'normal',
     weight: font.weight || 400,
   };
