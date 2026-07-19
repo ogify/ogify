@@ -29,6 +29,14 @@ export type OgResvgRenderOptions = {
  */
 export type OgResvgBackend = {
   /**
+   * Optional stable cache namespace for this backend.
+   *
+   * Use a different value whenever backend configuration can change PNG output.
+   * Backends without one receive an object-identity key per TemplateRenderer.
+   */
+  cacheKey?: string;
+
+  /**
    * Rasterize an SVG string to a PNG byte array.
    *
    * @returns PNG bytes as `Uint8Array` (also a `Buffer` on Node when using the node backend)

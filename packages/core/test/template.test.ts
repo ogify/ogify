@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Buffer as RuntimeBuffer } from 'buffer';
 import { renderTemplate } from '../src/template';
 import type { OgResvgBackend } from '../src/backends/types';
 import type { OgTemplate } from '../src/types';
@@ -89,8 +90,8 @@ describe('renderTemplate', () => {
         embedFont: true,
       })
     );
-    expect(result).toBeInstanceOf(Uint8Array);
-    expect(new TextDecoder().decode(result)).toBe('mock');
+    expect(RuntimeBuffer.isBuffer(result)).toBe(true);
+    expect(result.toString()).toBe('mock');
   });
 
   it('should respect custom dimensions', async () => {

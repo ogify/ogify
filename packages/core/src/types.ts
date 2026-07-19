@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { Buffer } from 'buffer';
 
 /**
  * Type definitions for the OGify core library.
@@ -150,8 +151,9 @@ export type OgTemplateOptions = {
   /**
    * Optional Resvg backend override.
    *
-   * When omitted, `@ogify/core` auto-detects the runtime and loads
-   * `@resvg/resvg-js` (Node) or `@resvg/resvg-wasm` (Edge / Workers).
+   * When omitted, conditional package exports select `@resvg/resvg-js`
+   * (Node), Cloudflare's WASM entry (`workerd`), or Vercel's WASM entry
+   * (`edge-light`) before bundling.
    * Pass a backend only when you need to override that default.
    *
    * @see createNodeResvg from `@ogify/core/node`
@@ -290,7 +292,7 @@ export type OgTemplateRenderer<
   /**
    * Optional Resvg backend override for all renders from this renderer.
    *
-   * When omitted, the runtime is auto-detected (Node → native, Edge → WASM).
+   * When omitted, the package entry preselects Node native or platform WASM.
    * Per-call `options.resvg` overrides this value.
    */
   resvg?: OgResvgBackend;
@@ -318,6 +320,6 @@ export type OgTemplateRenderer<
   afterRender?: (
     templateId: keyof TMap,
     params: TMap[keyof TMap],
-    image: Uint8Array
+    image: Buffer
   ) => void | Promise<void>;
 };

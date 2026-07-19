@@ -9,3 +9,8 @@ declare module '@resvg/resvg-wasm/index_bg.wasm' {
   const wasm: WebAssembly.Module;
   export default wasm;
 }
+
+declare module '@resvg/resvg-wasm/index_bg.wasm?module' {
+  const wasm: WebAssembly.Module;
+  export default wasm;
+}

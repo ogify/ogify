@@ -3,6 +3,8 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: {
     index: 'src/index.ts',
+    'index.cloudflare': 'src/index.cloudflare.ts',
+    'index.vercel': 'src/index.vercel.ts',
     node: 'src/node.ts',
     wasm: 'src/wasm.ts',
   },
@@ -19,6 +21,7 @@ export default defineConfig({
     '@resvg/resvg-js',
     '@resvg/resvg-wasm',
     '@resvg/resvg-wasm/index_bg.wasm',
+    '@resvg/resvg-wasm/index_bg.wasm?module',
     'lru-cache',
     'react',
   ],

@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### `@ogify/core`
 
 - **Cross-platform Resvg backends** — pluggable SVG → PNG rasterization:
-  - **Transparent auto-detect** — omit `resvg` and core loads `@resvg/resvg-js` (Node) or `@resvg/resvg-wasm` (Edge / Workers), including the package `.wasm` asset
+  - **Transparent platform selection** via package conditions — default/Node uses `@resvg/resvg-js`, `workerd` uses Cloudflare's static WASM import, and `edge-light` uses Vercel's required `?module` import
   - Explicit `resvg` always overrides the default
   - `@ogify/core/node` → `createNodeResvg()` and `@ogify/core/wasm` → `createWasmResvg(wasm)` for manual wiring
   - **`createAutoResvg()`** — same auto logic, available if you need the backend handle directly
@@ -22,14 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### `@ogify/core`
 
-- **PNG output type** is now `Uint8Array` (compatible with Node `Buffer` and Edge/Workers `Response`)
+- **PNG output remains `Buffer`** on every runtime through the cross-platform `buffer` package, preserving the existing API
 - **Cache keys** use Web Crypto SHA-256 instead of Node `crypto` (works on Workers / Edge)
 - **Filesystem cache** is loaded via dynamic `node:fs` import and clearly Node-only
 - **`@resvg/resvg-js`** is no longer imported from the main entry; use `@ogify/core/node` or rely on the Node default
 
 ### Notes
 
-- On Cloudflare Workers, core statically imports `@resvg/resvg-wasm/index_bg.wasm` so Wrangler can precompile it — no app-level WASM import required for the default path.
+- Conditional exports keep native bindings out of Worker bundles and raw Cloudflare WASM syntax out of Vercel bundles.
 - Use `cache: { type: 'memory' }` on Workers / Edge (`filesystem` requires Node.js).
 
 ---
@@ -136,14 +136,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Resvg rasterizes the vector SVG at `width × scale` pixels wide — exploiting the full quality of SVG's vector format
   - Output PNG dimensions are `(width × scale) × (height × scale)`
 
-  | `scale` | Output dimensions | Notes |
-  |---------|------------------|-------|
-  | `1` *(default)* | 1200 × 630 | No change — fully backward compatible |
-  | `1.25` | 1500 × 787 | Mild quality boost |
-  | `1.5` | 1800 × 945 | Good quality / size balance |
-  | `2` | 2400 × 1260 | **Recommended** — @2x retina |
-  | `3` | 3600 × 1890 | @3x ultra |
-  | `4` | 4800 × 2520 | Maximum (clamped) |
+  | `scale`         | Output dimensions | Notes                                 |
+  | --------------- | ----------------- | ------------------------------------- |
+  | `1` _(default)_ | 1200 × 630        | No change — fully backward compatible |
+  | `1.25`          | 1500 × 787        | Mild quality boost                    |
+  | `1.5`           | 1800 × 945        | Good quality / size balance           |
+  | `2`             | 2400 × 1260       | **Recommended** — @2x retina          |
+  | `3`             | 3600 × 1890       | @3x ultra                             |
+  | `4`             | 4800 × 2520       | Maximum (clamped)                     |
 
   **Constraints:**
   - Float values supported (`1.25`, `1.5`, etc.)

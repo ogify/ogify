@@ -43,20 +43,22 @@ Built on top of:
 
 ## Platform support
 
-Transparent by default: omit `resvg` and `@ogify/core` detects the runtime and loads the right backend. Pass `resvg` only to override.
+Transparent by default: omit `resvg` and package export conditions select the right backend at build time. Pass `resvg` only to override.
 
-| Runtime | Auto backend | Override (optional) |
-|---|---|---|
-| Node.js / Vercel Serverless | `@resvg/resvg-js` | `createNodeResvg()` from `@ogify/core/node` |
-| Cloudflare Workers / Pages | `@resvg/resvg-wasm` (+ package `.wasm` asset) | `createWasmResvg(wasm)` from `@ogify/core/wasm` |
-| Vercel Edge | `@resvg/resvg-wasm` (+ package `.wasm` asset) | same as Workers |
+| Runtime                     | Auto backend                                         | Override (optional)                             |
+| --------------------------- | ---------------------------------------------------- | ----------------------------------------------- |
+| Node.js / Vercel Serverless | `@resvg/resvg-js`                                    | `createNodeResvg()` from `@ogify/core/node`     |
+| Cloudflare Workers / Pages  | `workerd` export + static `@resvg/resvg-wasm` module | `createWasmResvg(wasm)` from `@ogify/core/wasm` |
+| Vercel Edge                 | `edge-light` export + Vercel `?module` WASM import   | same as Workers                                 |
 
 ```ts
 import { createRenderer } from '@ogify/core';
 
 // Works on Node, Cloudflare Workers, and Vercel Edge — no resvg wiring needed
 const renderer = createRenderer({
-  templates: { /* ... */ },
+  templates: {
+    /* ... */
+  },
   cache: { type: 'memory' },
 });
 ```
@@ -67,9 +69,11 @@ import { createRenderer } from '@ogify/core';
 import { createNodeResvg } from '@ogify/core/node';
 
 const renderer = createRenderer({
-  templates: { /* ... */ },
+  templates: {
+    /* ... */
+  },
   resvg: createNodeResvg(),
 });
 ```
 
-On Cloudflare Workers, your bundler must support `.wasm` imports from dependencies (Wrangler does). Use `cache: { type: 'memory' }` on Workers / Edge (`filesystem` is Node-only).
+Wrangler and Vercel select separate package entries, so Worker bundles never traverse native Node bindings and Vercel receives its required precompiled `?module` import. Use `cache: { type: 'memory' }` on Workers / Edge (`filesystem` is Node-only).

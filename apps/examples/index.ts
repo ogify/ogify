@@ -132,7 +132,7 @@ function subtitleMode(subtitle?: string): 'none' | 'plain' | 'html' {
   return 'html';
 }
 
-async function writeOutput(relativePath: string, buffer: Uint8Array): Promise<void> {
+async function writeOutput(relativePath: string, buffer: Buffer): Promise<void> {
   const fullPath = join('outputs', relativePath);
   await mkdir(dirname(fullPath), { recursive: true });
   await writeFile(fullPath, buffer);

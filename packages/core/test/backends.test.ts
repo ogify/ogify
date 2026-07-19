@@ -43,7 +43,6 @@ describe('resolveResvgBackend', () => {
     vi.unstubAllGlobals();
     vi.doUnmock('../src/backends/node');
     vi.doUnmock('../src/backends/wasm');
-    vi.doUnmock('../src/backends/wasm-asset');
   });
 
   it('returns the explicit backend when provided (override wins)', async () => {
@@ -60,66 +59,36 @@ describe('resolveResvgBackend', () => {
       render: vi.fn().mockResolvedValue(new Uint8Array([9])),
     };
 
-    vi.doMock('../src/backends/node', () => ({
-      createNodeResvg: () => nodeBackend,
-    }));
+    const { registerAutoBackendFactory, resetAutoResvgCache } =
+      await import('../src/backends/auto');
+    resetAutoResvgCache();
+    registerAutoBackendFactory(() => nodeBackend, 'node');
 
     const { resolveResvgBackend } = await import('../src/backends/resolve');
     await expect(resolveResvgBackend()).resolves.toBe(nodeBackend);
   });
 
-  it('auto-loads WASM from the core asset on edge when resvg is omitted', async () => {
+  it('uses the platform-registered WASM backend on edge', async () => {
     vi.stubGlobal('navigator', { userAgent: 'Cloudflare-Workers' });
 
     const wasmBackend: OgResvgBackend = {
       render: vi.fn().mockResolvedValue(new Uint8Array([5])),
     };
-    const fakeWasm = { __wasm: true } as unknown as WebAssembly.Module;
-
-    vi.doMock('../src/backends/wasm-asset', () => ({
-      defaultWasm: fakeWasm,
-    }));
-    vi.doMock('../src/backends/wasm', () => ({
-      createWasmResvg: vi.fn().mockResolvedValue(wasmBackend),
-    }));
-
-    const { createAutoResvg, resetAutoResvgCache } = await import('../src/backends/auto');
+    const { createAutoResvg, registerAutoBackendFactory, resetAutoResvgCache } =
+      await import('../src/backends/auto');
     resetAutoResvgCache();
+    registerAutoBackendFactory(() => wasmBackend, 'workerd');
 
     await expect(createAutoResvg()).resolves.toBe(wasmBackend);
   });
 
-  it('uses an explicit wasm override on edge when provided', async () => {
+  it('throws a helpful error when no platform backend was registered', async () => {
     vi.stubGlobal('navigator', { userAgent: 'Cloudflare-Workers' });
-
-    const wasmBackend: OgResvgBackend = {
-      render: vi.fn().mockResolvedValue(new Uint8Array([6])),
-    };
-    const createWasmResvg = vi.fn().mockResolvedValue(wasmBackend);
-
-    vi.doMock('../src/backends/wasm', () => ({ createWasmResvg }));
 
     const { createAutoResvg, resetAutoResvgCache } = await import('../src/backends/auto');
     resetAutoResvgCache();
 
-    const override = {} as WebAssembly.Module;
-    await expect(createAutoResvg({ wasm: override })).resolves.toBe(wasmBackend);
-    expect(createWasmResvg).toHaveBeenCalledWith(override);
-  });
-
-  it('throws a helpful error on edge when the WASM asset cannot be loaded', async () => {
-    vi.stubGlobal('navigator', { userAgent: 'Cloudflare-Workers' });
-
-    vi.doMock('../src/backends/wasm-asset', () => ({
-      get defaultWasm() {
-        throw new Error('wasm missing');
-      },
-    }));
-
-    const { createAutoResvg, resetAutoResvgCache } = await import('../src/backends/auto');
-    resetAutoResvgCache();
-
-    await expect(createAutoResvg()).rejects.toThrow(/Failed to auto-load the WASM Resvg backend/);
+    await expect(createAutoResvg()).rejects.toThrow(/No automatic Resvg backend was registered/);
   });
 });
 
@@ -144,5 +113,37 @@ describe('createNodeResvg', () => {
       fitTo: { mode: 'width', value: 1200 },
     });
     expect(result).toEqual(new Uint8Array([7, 8]));
+  });
+});
+
+describe('createWasmResvg', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('copies PNG bytes and frees WASM allocations deterministically', async () => {
+    const imageFree = vi.fn();
+    const rendererFree = vi.fn();
+    const asPng = vi.fn().mockReturnValue(new Uint8Array([4, 2]));
+    const render = vi.fn().mockReturnValue({ asPng, free: imageFree });
+    class Resvg {
+      render = render;
+      free = rendererFree;
+    }
+    const initWasm = vi.fn().mockResolvedValue(undefined);
+
+    vi.doMock('@resvg/resvg-wasm', () => ({ initWasm, Resvg }));
+
+    const { createWasmResvg } = await import('../src/backends/wasm');
+    const wasm = {} as WebAssembly.Module;
+    const backend = await createWasmResvg(wasm);
+    const result = await backend.render('<svg/>', {
+      fitTo: { mode: 'width', value: 1200 },
+    });
+
+    expect(result).toEqual(new Uint8Array([4, 2]));
+    expect(result).not.toBe(asPng.mock.results[0].value);
+    expect(imageFree).toHaveBeenCalledOnce();
+    expect(rendererFree).toHaveBeenCalledOnce();
   });
 });

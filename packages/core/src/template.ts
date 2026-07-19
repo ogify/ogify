@@ -10,6 +10,7 @@
  */
 
 import satori from 'satori';
+import { Buffer } from 'buffer';
 import type { ReactNode } from 'react';
 import { type SatoriOptions } from 'satori';
 import { html } from 'satori-html';
@@ -35,7 +36,7 @@ const DEFAULT_WIDTH = 1200;
 const DEFAULT_HEIGHT = 630;
 
 /**
- * Renders an OG template to a PNG image byte array.
+ * Renders an OG template to a PNG Buffer.
  *
  * **Rendering Pipeline:**
  *
@@ -58,7 +59,7 @@ const DEFAULT_HEIGHT = 630;
  * @param template - The template definition to render
  * @param params - Dynamic parameters to populate the template
  * @param options - Optional rendering options
- * @returns Promise resolving to PNG bytes (`Uint8Array`)
+ * @returns Promise resolving to a cross-platform `Buffer`
  *
  * @throws Will throw if:
  *   - Font loading fails
@@ -71,7 +72,7 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   template: OgTemplate<TParams>,
   params: TParams,
   options?: OgTemplateOptions
-): Promise<Uint8Array> {
+): Promise<Buffer> {
   const width = options?.width || DEFAULT_WIDTH;
   const height = options?.height || DEFAULT_HEIGHT;
   const fonts = options?.fonts?.length ? options.fonts : template.fonts;
@@ -154,7 +155,7 @@ export async function renderTemplate<TParams = OgTemplateParams>(
   //   scale=1.5  → 1800×945
   //   scale=2    → 2400×1260  (@2x retina)
   //   scale=3    → 3600×1890  (@3x ultra)
-  return resvg.render(svg, {
+  const png = await resvg.render(svg, {
     fitTo: {
       mode: 'width',
       // Math.round ensures integer pixel value (Resvg requires integer dimensions).
@@ -162,4 +163,8 @@ export async function renderTemplate<TParams = OgTemplateParams>(
       value: Math.round(width * scale),
     },
   });
+
+  // Preserve the public Buffer API from @ogify/core 1.x on every runtime.
+  // The npm `buffer` package provides the same implementation on Edge/Workers.
+  return Buffer.from(png);
 }

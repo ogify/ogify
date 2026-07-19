@@ -22,6 +22,7 @@ import type { OgResvgBackend } from './types';
  */
 export function createNodeResvg(): OgResvgBackend {
   return {
+    cacheKey: 'resvg-js@2',
     async render(svg, options) {
       const { renderAsync } = await import('@resvg/resvg-js');
       const pngData = await renderAsync(svg, {

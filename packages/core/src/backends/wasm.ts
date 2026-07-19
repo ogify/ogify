@@ -27,11 +27,7 @@ import type { OgResvgBackend } from './types';
  * Prefer a statically imported `WebAssembly.Module` on Cloudflare Workers.
  * `Response` / `BufferSource` work in many bundlers (e.g. when using `?module`).
  */
-export type OgWasmInput =
-  | BufferSource
-  | WebAssembly.Module
-  | Response
-  | PromiseLike<Response>;
+export type OgWasmInput = BufferSource | WebAssembly.Module | Response | PromiseLike<Response>;
 
 let wasmInitPromise: Promise<void> | null = null;
 
@@ -71,11 +67,23 @@ export async function createWasmResvg(wasm: OgWasmInput): Promise<OgResvgBackend
   const { Resvg } = await import('@resvg/resvg-wasm');
 
   return {
+    cacheKey: 'resvg-wasm@2',
     async render(svg, options) {
       const renderer = new Resvg(svg, {
         fitTo: options.fitTo,
       });
-      return renderer.render().asPng();
+
+      try {
+        const image = renderer.render();
+        try {
+          // Copy bytes before releasing WASM-owned allocations.
+          return new Uint8Array(image.asPng());
+        } finally {
+          image.free();
+        }
+      } finally {
+        renderer.free();
+      }
     },
   };
 }

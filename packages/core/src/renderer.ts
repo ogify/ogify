@@ -10,12 +10,15 @@
  * They define how to convert parameters into OG images.
  */
 
+import type { Buffer } from 'buffer';
+
 import type {
   OgTemplate,
   OgTemplateRenderer,
   OgTemplateParams,
   OgCacheConfig,
   OgTemplateOptions,
+  OgResvgBackend,
 } from './types';
 import { renderTemplate } from './template';
 import { CacheManager } from './utils/cache-manager';
@@ -85,10 +88,14 @@ export class TemplateRenderer<
   private config: OgTemplateRenderer<TMap>;
 
   /** Cache manager for rendered images */
-  private cacheManager: CacheManager<string, Uint8Array>;
+  private cacheManager: CacheManager<string, Buffer>;
 
   /** In-flight renders keyed by cache key to avoid duplicate work */
-  private renderInflight = new Map<string, Promise<Uint8Array>>();
+  private renderInflight = new Map<string, Promise<Buffer>>();
+
+  /** Stable identities for custom backends used in cache keys */
+  private resvgBackendIds = new WeakMap<OgResvgBackend, string>();
+  private nextResvgBackendId = 1;
 
   /**
    * Internal registry mapping template IDs to template definitions.
@@ -180,7 +187,7 @@ export class TemplateRenderer<
     templateId: K,
     params: TMap[K] | (() => Promise<TMap[K]>),
     options?: OgTemplateOptions
-  ): Promise<Uint8Array> {
+  ): Promise<Buffer> {
     const { sharedParams } = this.config;
     // Step 1: Look up the template in the registry
     const template = this.getTemplate(templateId);
@@ -205,8 +212,8 @@ export class TemplateRenderer<
       templateId,
       ...mergedParams,
       ...renderOptions,
-      // Avoid putting the backend object into the cache key
-      resvg: undefined,
+      // Custom rasterizers can produce different output for identical SVG.
+      resvg: this.getResvgCacheKey(renderOptions.resvg),
     });
 
     const cached = await this.cacheManager.get(cacheKey);
@@ -242,6 +249,23 @@ export class TemplateRenderer<
     this.renderInflight.set(cacheKey, renderPromise);
 
     return renderPromise;
+  }
+
+  private getResvgCacheKey(backend?: OgResvgBackend): string {
+    if (!backend) {
+      return 'auto';
+    }
+
+    if (backend.cacheKey) {
+      return backend.cacheKey;
+    }
+
+    let id = this.resvgBackendIds.get(backend);
+    if (!id) {
+      id = `custom-${this.nextResvgBackendId++}`;
+      this.resvgBackendIds.set(backend, id);
+    }
+    return id;
   }
 }
 

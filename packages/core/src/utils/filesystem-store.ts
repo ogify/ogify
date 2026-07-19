@@ -7,6 +7,7 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { Buffer } from 'buffer';
 
 import { sha256Hex } from './hash';
 
@@ -27,7 +28,7 @@ export async function ensureCacheDirectory(dir: string): Promise<void> {
 export async function loadFromDisk(
   config: FilesystemStoreConfig,
   key: string
-): Promise<Uint8Array | undefined> {
+): Promise<Buffer | undefined> {
   const filepath = path.join(config.dir, await filenameForKey(key));
 
   try {
@@ -46,7 +47,7 @@ export async function loadFromDisk(
     }
 
     const data = await fs.promises.readFile(filepath);
-    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
   } catch {
     return undefined;
   }

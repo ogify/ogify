@@ -1,9 +1,9 @@
 /**
  * Binary helpers shared across runtimes.
  *
- * Prefer `Uint8Array` in public APIs — it works in Node, browsers, Workers, and Edge.
- * On Node, `Buffer` is a `Uint8Array` subclass, so callers can still use Buffer APIs
- * when the runtime provides them.
+ * Internal binary normalization uses `Uint8Array`, which works in Node,
+ * browsers, Workers, and Edge. Public rendered images remain `Buffer` for
+ * backward compatibility.
  */
 
 /**

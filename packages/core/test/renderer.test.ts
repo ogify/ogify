@@ -81,7 +81,7 @@ describe('Renderer Module', () => {
 
     describe('renderToImage', () => {
       it('should render successfully', async () => {
-        const mockBuffer = new Uint8Array([1, 2, 3]);
+        const mockBuffer = Buffer.from([1, 2, 3]);
         vi.mocked(templateModule.renderTemplate).mockResolvedValue(mockBuffer);
 
         const result = await renderer.renderToImage('test-template', {
@@ -105,7 +105,7 @@ describe('Renderer Module', () => {
       it('should call lifecycle hooks', async () => {
         const beforeRender = vi.fn();
         const afterRender = vi.fn();
-        const mockBuffer = new Uint8Array([9, 9, 9]);
+        const mockBuffer = Buffer.from([9, 9, 9]);
         vi.mocked(templateModule.renderTemplate).mockResolvedValue(mockBuffer);
 
         const configWithHooks = {
@@ -129,7 +129,7 @@ describe('Renderer Module', () => {
       });
 
       it('should pass custom dimensions', async () => {
-        const mockBuffer = new Uint8Array([1]);
+        const mockBuffer = Buffer.from([1]);
         vi.mocked(templateModule.renderTemplate).mockResolvedValue(mockBuffer);
 
         await renderer.renderToImage('test-template', {}, { width: 800, height: 400 });
@@ -142,7 +142,7 @@ describe('Renderer Module', () => {
       });
 
       it('should accept params as a function returning a promise', async () => {
-        const mockBuffer = new Uint8Array([2]);
+        const mockBuffer = Buffer.from([2]);
         vi.mocked(templateModule.renderTemplate).mockResolvedValue(mockBuffer);
 
         const paramsFn = vi.fn().mockResolvedValue({ title: 'Async Title' });
@@ -158,7 +158,7 @@ describe('Renderer Module', () => {
       });
 
       it('should accept sharedParams as a function returning a promise', async () => {
-        const mockBuffer = new Uint8Array([3]);
+        const mockBuffer = Buffer.from([3]);
         vi.mocked(templateModule.renderTemplate).mockResolvedValue(mockBuffer);
 
         const asyncSharedConfig: OgTemplateRenderer = {
@@ -177,7 +177,7 @@ describe('Renderer Module', () => {
       });
 
       it('should pass renderer-level resvg backend to renderTemplate', async () => {
-        const mockBuffer = new Uint8Array([4]);
+        const mockBuffer = Buffer.from([4]);
         const resvg = { render: vi.fn() };
         vi.mocked(templateModule.renderTemplate).mockResolvedValue(mockBuffer);
 
@@ -194,6 +194,32 @@ describe('Renderer Module', () => {
           expect.anything(),
           expect.objectContaining({ resvg })
         );
+      });
+
+      it('should keep cache entries separate for different resvg backends', async () => {
+        const firstImage = Buffer.from([1]);
+        const secondImage = Buffer.from([2]);
+        const firstBackend = { render: vi.fn() };
+        const secondBackend = { render: vi.fn() };
+
+        vi.mocked(templateModule.renderTemplate)
+          .mockResolvedValueOnce(firstImage)
+          .mockResolvedValueOnce(secondImage);
+
+        const first = await renderer.renderToImage(
+          'test-template',
+          { title: 'Hello' },
+          { resvg: firstBackend as any }
+        );
+        const second = await renderer.renderToImage(
+          'test-template',
+          { title: 'Hello' },
+          { resvg: secondBackend as any }
+        );
+
+        expect(first).toBe(firstImage);
+        expect(second).toBe(secondImage);
+        expect(templateModule.renderTemplate).toHaveBeenCalledTimes(2);
       });
     });
   });
